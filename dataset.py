@@ -1,7 +1,7 @@
 import os , random, shutil
 from pathlib import Path
 
-def make_data_split(main_path, test_split_ratio:float  = .2 , val = True, val_split_ratio:float = .1, shuffle = True):
+def make_data_split(main_path, test = True, test_split_ratio:float  = .2 , val = True, val_split_ratio:float = .1, shuffle = True):
     '''
     Make data split Train/test/val
     Note: keep a copy of the ORIGINAL DATASET
@@ -26,23 +26,24 @@ def make_data_split(main_path, test_split_ratio:float  = .2 , val = True, val_sp
         os.makedirs(main/'train')
 
         # creating test set
-        os.makedirs(main/'test')
-        test_image_num = 0
-        test_image_num = int(total_files*test_split_ratio)
-        print('test images:',test_image_num)
-        for class_name in class_names:
-            class_path = main/class_name
-            if shuffle:
-                sample_images = random.sample(os.listdir(class_path), test_image_num)
+        if test :
+            os.makedirs(main/'test')
+            test_image_num = 0
+            test_image_num = int(total_files*test_split_ratio)
+            print('test images:',test_image_num)
+            for class_name in class_names:
+                class_path = main/class_name
+                if shuffle:
+                    sample_images = random.sample(os.listdir(class_path), test_image_num)
 
-            else:
-                sample_images = sorted(os.listdir(class_path))[:test_image_num]
+                else:
+                    sample_images = sorted(os.listdir(class_path))[:test_image_num]
 
-            sample_images = [class_path/i for i in sample_images]
-            test_class = str(main/'test'/class_name)
-            os.makedirs(test_class)
-            for file in sample_images:
-                shutil.move(str(file), test_class)
+                sample_images = [class_path/i for i in sample_images]
+                test_class = str(main/'test'/class_name)
+                os.makedirs(test_class)
+                for file in sample_images:
+                    shutil.move(str(file), test_class)
 
         #creating validation dataset
         val_image_num = 0
