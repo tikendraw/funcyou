@@ -92,6 +92,8 @@ def download_kaggle_dataset(data_link, kaggle = 'gdrive',kind = 'datasets', extr
     ! mkdir /root/.kaggle
 
     if kaggle in ['google', 'drive', 'gdrive','google drive']:
+        from google.colab import drive
+        drive.mount('/gdrive')
         !cp /content/drive/MyDrive/kaggle.json /root/.kaggle
     else:
         pass
