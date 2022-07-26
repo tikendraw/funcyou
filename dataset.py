@@ -1,6 +1,7 @@
 import os , random, shutil
 from pathlib import Path
 
+#make data splits
 def make_data_split(main_path, test = True, test_split_ratio:float  = .2 , val = True, val_split_ratio:float = .1, shuffle = True):
     '''
     Make data split Train/test/val
@@ -71,6 +72,40 @@ def make_data_split(main_path, test = True, test_split_ratio:float  = .2 , val =
         print('train images:', total_files - test_image_num - val_image_num)
     except Exception as e:
         print('Exception Occured: ',e)
+
+
+#download_kaggle_dataset
+def download_kaggle_dataset(data_link, kaggle = 'gdrive',kind = 'datasets', extract = True):
+
+    '''
+    This function downloads kaggle dataset
+    Note: keep kaggle.json in curent dir or your google drive 
+
+    args :
+            data_link = link to the dataset  user/datasetname
+            kaggle    = place of kaggle.json ['current','gdrive']
+            kind = [datasets, compititions]
+    
+    '''
+
+    ! pip install kaggle
+    ! mkdir /root/.kaggle
+
+    if kaggle in ['google', 'drive', 'gdrive','google drive']:
+        !cp /content/drive/MyDrive/kaggle.json /root/.kaggle
+    else:
+        pass
+        !cp kaggle.json /root/.kaggle/
+
+    print('config set')
+
+    ! chmod 600 /root/.kaggle/kaggle.json
+
+    if extract:
+        !kaggle $kind download $data_link --unzip
+    else:
+        !kaggle $kind download $data_link 
+
 
 def main():
 	pass
