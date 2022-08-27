@@ -75,38 +75,47 @@ def make_data_split(main_path, test = True, test_split_ratio:float  = .2 , val =
 
 
 #download_kaggle_dataset
-def download_kaggle_dataset(data_link, kaggle = 'gdrive',kind = 'datasets', extract = True):
+def download_kaggle_dataset(api_command:str = None, data_link:str = None, gdrive = False ,kind = 'datasets'):
 
     '''
     This function downloads kaggle dataset
     Note: keep kaggle.json in curent dir or your google drive 
 
     args :
-            data_link = link to the dataset  user/datasetname
-            kaggle    = place of kaggle.json ['current','gdrive']
-            kind = [datasets, compititions]
+            data_link   = link to the dataset  user/datasetname
+            api_command = copied command from the kaggle dataset page (easiest way, just copy and paste)
+            kaggle      = place of kaggle.json ['current','gdrive']
+            kind        = [datasets, compititions]
     
     '''
+    import os
+    from google.colab import drive
+    os.system('pip install kaggle')
+    
+    kaggle_path = '/root/.kaggle/'
 
-    ! pip install kaggle
-    ! mkdir /root/.kaggle
-
-    if kaggle in ['google', 'drive', 'gdrive','google drive']:
-        from google.colab import drive
+    #create the kaggle path
+    if not os.path.exists(kaggle_path):
+        os.makedirs(kaggle_path)
+    
+    #mount gdrive and copy kaggle.json
+    if gdrive:
         drive.mount('/gdrive')
-        !cp /content/drive/MyDrive/kaggle.json /root/.kaggle
+        os.system(f'cp /gdrive/MyDrive/kaggle.json {kaggle_path}')
     else:
-        pass
-        !cp kaggle.json /root/.kaggle/
-
+        os.system(f'cp kaggle.json {kaggle_path}')
     print('config set')
 
-    ! chmod 600 /root/.kaggle/kaggle.json
+    #giving permissino to file
+    os.system('chmod 600 /root/.kaggle/kaggle.json')
 
-    if extract:
-        !kaggle $kind download $data_link --unzip
-    else:
-        !kaggle $kind download $data_link 
+    #downloadin dataset
+    print('Downloading Dataset')
+    if api_command is not None:
+        os.system(api_command + ' --unzip' )
+    elif data_link is not None:
+        os.system(f'kaggle {kind} download {data_link} --unzip') 
+
 
 
 def main():
