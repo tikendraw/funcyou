@@ -112,10 +112,13 @@ def download_kaggle_dataset(api_command:str = None, data_link:str = None, gdrive
     #downloadin dataset
     print('Downloading Dataset')
     if api_command is not None :
-        if unzip == True:
-	        os.system(api_command + ' --unzip')
-        elif unzip == False:
-            os.system(api_command )
+        try:
+            if unzip == True:
+                os.system(api_command + ' --unzip')
+            else :
+                os.system(api_command )
+        except Exception as e:
+            print(e)
 
     elif data_link is not None:
         os.system(f'kaggle {kind} download {data_link} --unzip') 
@@ -123,5 +126,6 @@ def download_kaggle_dataset(api_command:str = None, data_link:str = None, gdrive
 
 
 def main():
-if __name__=="__main__":	
-	main()
+
+    if __name__=="__main__":	
+	    main()
