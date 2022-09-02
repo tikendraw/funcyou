@@ -1,8 +1,8 @@
 import os , random, shutil
 from pathlib import Path
 
-#make data splits
-def make_data_split(main_path, test = True, test_split_ratio:float  = .2 , val = True, val_split_ratio:float = .1, shuffle = True):
+#make data splitstr
+def make_data_split(main_path, test = True, test_split_ratio:float  = .2 , val = True, val_split_ratio:float = .1, shuffle = True, unzip = True ):
     '''
     Make data split Train/test/val
     Note: keep a copy of the ORIGINAL DATASET
@@ -111,8 +111,11 @@ def download_kaggle_dataset(api_command:str = None, data_link:str = None, gdrive
 
     #downloadin dataset
     print('Downloading Dataset')
-    if api_command is not None:
-        os.system(api_command + ' --unzip' )
+    if api_command is not None :
+        if unzip = True:
+	    os.system(api_command + ' --unzip' )
+ 	else:
+	    os.system(api_command )
     elif data_link is not None:
         os.system(f'kaggle {kind} download {data_link} --unzip') 
 
