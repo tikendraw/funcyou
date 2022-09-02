@@ -112,7 +112,7 @@ def download_kaggle_dataset(api_command:str = None, data_link:str = None, gdrive
     #downloadin dataset
     print('Downloading Dataset')
     if api_command is not None :
-        if unzip = True:
+        if unzip == True:
 	    os.system(api_command + ' --unzip' )
  	else:
 	    os.system(api_command )
