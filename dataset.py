@@ -75,7 +75,7 @@ def make_data_split(main_path, test = True, test_split_ratio:float  = .2 , val =
 
 
 #download_kaggle_dataset
-def download_kaggle_dataset(api_command:str = None, data_link:str = None, gdrive = False ,kind = 'datasets'):
+def download_kaggle_dataset(api_command:str = None, data_link:str = None, gdrive = False ,kind = 'datasets', unzip = False):
 
     '''
     This function downloads kaggle dataset
