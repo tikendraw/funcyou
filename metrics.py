@@ -1,16 +1,13 @@
-
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import f1_score, precision_score, recall_score,roc_auc_score, confusion_matrix
+import seaborn as sns
+    
 
 
 def all_metrics(y_true, y_pred, heatmap = True):
-	import os
-	try:
-		os.system('pip install scikit-learn seaborn')
-    except Exception as e:
-    	print(e)
-    	
-    from sklearn.metrics import f1_score, precision_score, recall_score,roc_auc_score, confusion_matrix
-    import seaborn as sns
-    
+    import os
+    os.system('pip install scikit-learn seaborn')
+  
     print('f1 score: ',f1_score(y_true, y_pred))
     print( 'precision score: ', precision_score(y_true, y_pred))
     print('recall score: ',recall_score(y_true,y_pred))
@@ -23,8 +20,6 @@ def all_metrics(y_true, y_pred, heatmap = True):
 
 
 # Function to evaluate: accuracy, precision, recall, f1-score
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-
 def calculate_results(y_true, y_pred):
     """
     Calculates model accuracy, precision, recall and f1 score of a binary classification model.
@@ -40,13 +35,15 @@ def calculate_results(y_true, y_pred):
     model_accuracy = accuracy_score(y_true, y_pred) * 100
     # Calculate model precision, recall and f1 score using "weighted" average
     model_precision, model_recall, model_f1, _ = precision_recall_fscore_support(y_true, y_pred, average="weighted")
-    model_results = {"accuracy": model_accuracy,
+    model_results = {
+				"accuracy": model_accuracy,
                   "precision": model_precision,
                   "recall": model_recall,
                   "f1": model_f1}
     return model_results
-main():
 
+def main():
+	pass
 
 
 if __name__=="__main__":
