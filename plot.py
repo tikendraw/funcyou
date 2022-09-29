@@ -3,6 +3,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import seaborn as sns
 
 def plot_random_dataset(main_path, row:int = 2, col:int = 5, figsize:tuple= (15,6), recursive = True):
 
@@ -50,7 +51,24 @@ def plot_random_dataset(main_path, row:int = 2, col:int = 5, figsize:tuple= (15,
     fig.suptitle(PATH)
     plt.show()
 
+def pairplot(df, figsize = (20,20), hue:str = None):
+    num_cols = df.select_dtypes('number').columns
+    print(num_cols)
 
+    total_cols = len(num_cols)
+    plot_num = 1
+
+    plt.figure(figsize=(20,20))
+    for col in num_cols:
+        for col2 in num_cols:
+            plt.subplot(total_cols, total_cols, plot_num)
+            plot_num += 1
+
+            if col == col2:
+                sns.histplot(x = df[col], hue = df[hue])
+
+            else:
+                sns.scatterplot(x = df[col], y = df[col2], hue = df[hue])
 
 
 
