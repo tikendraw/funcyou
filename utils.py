@@ -26,7 +26,8 @@ def dir_walkthrough(path):
         images      = {len(image_files)} 
         videos      = {len(video_files)} 
         other files = {len(other_files)}  
-        total files {len(files)}''')
+        total files = {len(files)}
+	----------------------------------------''')
 
 
 def main():
