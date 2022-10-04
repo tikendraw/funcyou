@@ -48,7 +48,7 @@ def plot_random_dataset(main_path, row:int = 2, col:int = 5, figsize:tuple= (15,
         plt.title(title)
         plt.imshow(img)
     
-    fig.suptitle(PATH)
+    fig.suptitle(path)
     plt.show()
 
 def pairplot(df, figsize = (20,20), hue:str = None):
