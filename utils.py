@@ -29,7 +29,9 @@ def dir_walkthrough(path):
         total files {len(files)}''')
 
 
-main()
+def main():
+	...
+	
 if __name__=="__main__":
 	
 	main()
