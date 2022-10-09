@@ -5,6 +5,7 @@ def dir_walkthrough(path):
     '''
     shows the contents of the file directory
     '''
+	print('		dirname			folders			images			videos			others			TOTAL')
     for dirname, folders, files in os.walk(path):
         img_extension = ['jpg','jpeg','png','webp','tiff','tif','bmp','gif']
         video_extension = ['mp4','m4a','3gp','mkv','xvid','vob','mov','wmv','avi']
@@ -21,13 +22,7 @@ def dir_walkthrough(path):
             else:
                 other_files.append(file)
             
-        print(f'''{dirname} contains ::
-        folders     = {len(folders)}  
-        images      = {len(image_files)} 
-        videos      = {len(video_files)} 
-        other files = {len(other_files)}  
-        total files = {len(files)}
-	----------------------------------------''')
+        print(f'''{dirname}			{len(folders)}			{len(image_files)}			{len(video_files)}			{len(other_files)}			{len(files)}''')
 
 
 def main():
