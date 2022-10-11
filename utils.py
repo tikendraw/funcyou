@@ -1,11 +1,14 @@
 import os
 
+# CONTENTS OF DRIVE
 def dir_walkthrough(path):
 
     '''
     shows the contents of the file directory
     '''
-	print('		dirname			folders			images			videos			others			TOTAL')
+    import pandas as pd
+    columns = ['dirname','folders','images','videos','others','TOTAL']
+    big_list = []
     for dirname, folders, files in os.walk(path):
         img_extension = ['jpg','jpeg','png','webp','tiff','tif','bmp','gif']
         video_extension = ['mp4','m4a','3gp','mkv','xvid','vob','mov','wmv','avi']
@@ -22,9 +25,17 @@ def dir_walkthrough(path):
             else:
                 other_files.append(file)
             
-        print(f'''{dirname}			{len(folders)}			{len(image_files)}			{len(video_files)}			{len(other_files)}			{len(files)}''')
-
-
+        
+        big_list.append({'Directory': dirname,
+             'Folders': len(folders),
+             'Images': len(image_files),
+             'Videos': len(video_files),
+             'Others':len(other_files),
+             'Total Files': len(files)})
+    
+    df = pd.DataFrame(big_list)
+    return df
+        
 def main():
 	...
 	
