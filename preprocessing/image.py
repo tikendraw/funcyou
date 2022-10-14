@@ -2,7 +2,7 @@ import os
 from tqdm import tqdm
 from PIL import Image
 
-def resize_func( file_path:str, dest_path:str = None ,px:int  = 512, keep_aspect_ratio = True, quality:int = 100):
+def resize_func( file_path:str, dest_path:str = None ,px:int  = 512, keep_aspect_ratio = True, quality:int = 100, format = None):
     '''
     Resizes photos in a directory with given paramters
     
@@ -53,7 +53,7 @@ def resize_func( file_path:str, dest_path:str = None ,px:int  = 512, keep_aspect
         print('new height:', h, 'new width:',w)
 
         img_resized = img.resize((int(w),int(h)), Image.ANTIALIAS)
-        img_resized.save(dest_path + f'/{img_name}_resized.jpg', quality=100)
+        img_resized.save(dest_path + f'/{img_name}_resized',format=format, quality=100)
 
 
 
