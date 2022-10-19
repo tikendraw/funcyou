@@ -48,6 +48,31 @@ def plot_random_dataset(main_path, row:int = 2, col:int = 5, figsize:tuple= (15,
         plt.imshow(img)
     
     plt.show()
+	
+from PIL import Image
+import numpy as np
+import matplotlib.image as mpimg
+
+# function to plot an image and details
+def plot_image_with_details(image_path):
+    print(image_path)
+    plt.subplot(1,2,1)
+    image_ = Image.open(image_path)
+    plt.imshow(image_)
+    plt.title(f'pillow image {image_.size}')
+
+    plt.subplot(1,2,2)
+    plt_image = mpimg.imread(image_path)
+    plt.imshow(plt_image)
+    plt.title(f'matplotlib image {plt_image.shape}')
+
+    print('Image size: ',image_.size)
+    print('Image mode: ',image_.mode)
+    print('Height',image_.height)
+    print('width',image_.width)
+    #image as numpy array
+    image_array = np.asarray(image_)
+    print('Shape of Image as per numpy', image_array.shape)
 
 def pairplot(df, figsize = (20,20), hue:str = None):
     num_cols = df.select_dtypes('number').columns
