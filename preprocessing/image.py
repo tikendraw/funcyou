@@ -32,13 +32,13 @@ def resize_func( file_path:str, dest_path:str = None ,px:int  = 512, keep_aspect
             img = Image.open(img_path)
             #Dimensions
             w, h = img. size
-            print('height:', h, 'width: ', w)
+#             print('height:', h, 'width: ', w)
             #ratio
             ratio = h/w
-            print(ratio)
+#             print(ratio)
 
             filename, extension = os.path.splitext(item)
-            print(filename, '   :  ', extension)
+#             print(filename, '   :  ', extension)
 
 
             if keep_aspect_ratio:        
@@ -57,7 +57,7 @@ def resize_func( file_path:str, dest_path:str = None ,px:int  = 512, keep_aspect
             if not os.path.exists(dest_path):
                 os.makedirs(dest_path)
 
-            print('new height:', h, 'new width:',w)
+#             print('new height:', h, 'new width:',w)
 
             img_resized = img.resize((int(w),int(h)), Image.ANTIALIAS)
             img_resized.save(dest_path + f'/{filename}_resized{extension}', format = format, quality=100)
