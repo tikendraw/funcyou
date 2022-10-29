@@ -63,7 +63,7 @@ def resize_func( file_path:str, dest_path:str = None ,px:int  = 512, keep_aspect
             img_resized.save(dest_path + f'/{filename}_resized{extension}', format = format, quality=100)
 
     except Exception as e:
-        raise ('Exception Occured: ',e)+
+        raise ('Exception Occured: ',e)
 
 def main(): 
     ...
