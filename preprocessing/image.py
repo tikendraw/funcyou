@@ -26,43 +26,44 @@ def resize_func( file_path:str, dest_path:str = None ,px:int  = 512, keep_aspect
     if dest_path == None:
         dest_path = file_path
     
-    for item in tqdm(os.listdir(file_path)):
-        img_path = os.path.join(file_path, item)        
-        img = Image.open(img_path)
-        #Dimensions
-        w, h = img. size
-        print('height:', h, 'width: ', w)
-        #ratio
-        ratio = h/w
-        print(ratio)
+    try:
+        for item in tqdm(os.listdir(file_path)):
+            img_path = os.path.join(file_path, item)        
+            img = Image.open(img_path)
+            #Dimensions
+            w, h = img. size
+            print('height:', h, 'width: ', w)
+            #ratio
+            ratio = h/w
+            print(ratio)
 
-        filename, extension = os.path.splitext(item)
-        print(filename, '   :  ', extension)
+            filename, extension = os.path.splitext(item)
+            print(filename, '   :  ', extension)
 
 
-        if keep_aspect_ratio:        
-            if ratio < 1:
-                h = px * ratio
-                w = px 
-                
-                
+            if keep_aspect_ratio:        
+                if ratio < 1:
+                    h = px * ratio
+                    w = px 
+
+
+                else:
+                    w = px/ratio
+                    h = px 
             else:
-                w = px/ratio
-                h = px 
-        else:
-            h = px
-            w = px
-            
-        if not os.path.exists(dest_path):
-            os.makedirs(dest_path)
+                h = px
+                w = px
 
-        print('new height:', h, 'new width:',w)
+            if not os.path.exists(dest_path):
+                os.makedirs(dest_path)
 
-        img_resized = img.resize((int(w),int(h)), Image.ANTIALIAS)
-        img_resized.save(dest_path + f'/{filename}_resized{extension}', format = format, quality=100)
+            print('new height:', h, 'new width:',w)
 
+            img_resized = img.resize((int(w),int(h)), Image.ANTIALIAS)
+            img_resized.save(dest_path + f'/{filename}_resized{extension}', format = format, quality=100)
 
-
+    except Exception as e:
+        raise ('Exception Occured: ',e)+
 
 def main(): 
     ...
