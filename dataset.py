@@ -75,7 +75,7 @@ def make_data_split(main_path, test = True, test_split_ratio:float  = .2 , val =
 
 
 #download_kaggle_dataset
-def download_kaggle_dataset(api_command:str = None, data_link:str = None, gdrive = False ,kind = 'datasets', unzip = False):
+def download_kaggle_dataset(api_command:str = None, url:str = None, unzip = False):
 
     '''
     This function downloads kaggle dataset
@@ -89,9 +89,7 @@ def download_kaggle_dataset(api_command:str = None, data_link:str = None, gdrive
     
     '''
     import os
-    from google.colab import drive
-    os.system('pip install kaggle')
-    
+
     kaggle_path = '/root/.kaggle/'
 
     #create the kaggle path
@@ -99,18 +97,13 @@ def download_kaggle_dataset(api_command:str = None, data_link:str = None, gdrive
         os.makedirs(kaggle_path)
     
     #mount gdrive and copy kaggle.json
-    if gdrive:
-        drive.mount('/gdrive')
-        os.system(f'cp /gdrive/MyDrive/kaggle.json {kaggle_path}')
-    else:
-        os.system(f'cp kaggle.json {kaggle_path}')
-    print('config set')
+
+    os.system(f'cp kaggle.json {kaggle_path}')
 
     #giving permissino to file
     os.system('chmod 600 /root/.kaggle/kaggle.json')
 
     #downloadin dataset
-    print('Downloading Dataset')
     if api_command is not None :
         try:
             if unzip == True:
