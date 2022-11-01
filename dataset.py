@@ -77,49 +77,65 @@ def make_data_split(main_path, test = True, test_split_ratio:float  = .2 , val =
 
 
 #download_kaggle_dataset
+#download_kaggle_dataset
 def download_kaggle_dataset(api_command:str = None, url:str = None, unzip = False):
 
     '''
     This function downloads kaggle dataset
+
     Note: keep kaggle.json in curent dir or your google drive 
-
     args :
-            data_link   = link to the dataset  user/datasetname
-            api_command = copied command from the kaggle dataset page (easiest way, just copy and paste)
-            kaggle      = place of kaggle.json ['current','gdrive']
-            kind        = [datasets, compititions]
-    
-    '''
 
+            url  = link to the dataset  https://www.kaggle.com/datasets/akshaydattatraykhare/diabetes-dataset
+
+            api_command = copied command from the kaggle dataset page (easiest way, just copy and paste)
+
+            unzip = True , unzip the downloaded zip file    
+    '''
     IN_COLAB = 'google.colab' in sys.modules
 
     if IN_COLAB:
         kaggle_path = '/root/.kaggle/'
+        
     else:
-        kaggle_path = ''
+        kaggle_path = '~/.kaggle'
+
     #create the kaggle path
     if not os.path.exists(kaggle_path):
         os.makedirs(kaggle_path)
     
     #mount gdrive and copy kaggle.json
+    try:
+        os.system(f'cp kaggle.json {kaggle_path}')
+    except Exception as e:
+        raise ValueError(e)
+        
+    # #giving permissino to file
+    kaggle_file_path = os.path.join(kaggle_path, 'kaggle.json')
+    os.system(f'chmod 600 {kaggle_file_path}')
 
-    os.system(f'cp kaggle.json {kaggle_path}')
+    if url:
+        url = url.split('/')
+        idx = url.index('www.kaggle.com')
+        kind = url[idx+1]
 
-    #giving permissino to file
-    os.system('chmod 600 /root/.kaggle/kaggle.json')
+        if kind == 'datasets':
+            person = url[idx+2]
+            dataname = url[idx+3]
+            
+            api_command = f'kaggle {kind} download -d {person}/{dataname}'
+        else:
+            dataname = url[idx+2]
+            api_command = f'kaggle {kind} download -c {dataname}'
 
-    #downloadin dataset
-    if api_command is not None :
-        try:
-            if unzip == True:
-                os.system(api_command + ' --unzip')
-            else :
-                os.system(api_command )
-        except Exception as e:
-            print(e)
+    try:
+        if unzip == True:
+            print(os.system(api_command + ' --unzip'), flush = True)
+        else :
+            print(os.system(api_command ), flush = True)
+    except Exception as e:
+        print('Error Occured: ',e)
 
-    elif data_link is not None:
-        os.system(f'kaggle {kind} download {data_link} --unzip') 
 
 
 
