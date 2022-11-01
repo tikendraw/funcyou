@@ -106,6 +106,7 @@ def download_kaggle_dataset(api_command: str = None, url: str = None, unzip=Fals
 
             unzip = True , unzip the downloaded zip file
     """
+
     IN_COLAB = "google.colab" in sys.modules
 
     if IN_COLAB:
@@ -140,6 +141,9 @@ def download_kaggle_dataset(api_command: str = None, url: str = None, unzip=Fals
             api_command = f"kaggle {kind} download -d {person}/{dataname}"
         else:
             dataname = url[idx + 2]
+            print(
+                "Note: Make Sure you have agreed to Competition Rules. Else we can't download it"
+            )
             api_command = f"kaggle {kind} download -c {dataname}"
 
     print(api_command)
