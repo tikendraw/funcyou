@@ -1,5 +1,7 @@
 import os , random, shutil
 from pathlib import Path
+import os
+import sys
 
 #make data splitstr
 def make_data_split(main_path, test = True, test_split_ratio:float  = .2 , val = True, val_split_ratio:float = .1, shuffle = True, unzip = True ):
@@ -88,10 +90,13 @@ def download_kaggle_dataset(api_command:str = None, url:str = None, unzip = Fals
             kind        = [datasets, compititions]
     
     '''
-    import os
 
-    kaggle_path = '/root/.kaggle/'
+    IN_COLAB = 'google.colab' in sys.modules
 
+    if IN_COLAB:
+        kaggle_path = '/root/.kaggle/'
+    else:
+        kaggle_path = ''
     #create the kaggle path
     if not os.path.exists(kaggle_path):
         os.makedirs(kaggle_path)
@@ -122,3 +127,4 @@ def main():
 
     if __name__=="__main__":	
 	    main()
+
