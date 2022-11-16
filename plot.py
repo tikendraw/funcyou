@@ -169,7 +169,37 @@ def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10, 10), text_s
     fig.savefig("confusion_matrix.png")
 
 
+def plot_loss_accuracy(history, plot = ['loss','accuracy'], split = ['train','val'],figsize = (20,10), **plot_kwargs ):
+    
+    
+    try:
+        hist = pd.DataFrame(history.history)
+        cols = []
+        for i in plot:
+            for j in split:
+                if j == 'val':
+                    cols.append(j+'_'+i)
+                else:
+                    cols.append(i)
 
+        def display(col,plot_num):
+            plt.subplot(len(plot),len(split),plot_num)
+            plt.grid(True)
+            plt.plot(history.epoch, hist[col], 'b', label=col, **plot_kwargs)
+            plt.title((' '.join(col.split('_'))).upper())
+            plt.xlabel('epochs')
+    #         plt.ylabel('loss') if 'loss' in col else plt.ylable('accuracy') 
+            plt.legend()
+        
+        plt.figure(figsize = figsize)
+        plot_title = " ".join(plot).upper()+" PLOT"
+        plt.suptitle(plot_title)
+
+        for plot_num,col in enumerate(cols,1):
+            display(col,plot_num)
+
+    except Exception as e:
+        print('Error Occured: ',e
 
 
 
