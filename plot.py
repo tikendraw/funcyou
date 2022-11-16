@@ -169,11 +169,26 @@ def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10, 10), text_s
     fig.savefig("confusion_matrix.png")
 
 
-def plot_loss_accuracy(history, plot = ['loss','accuracy'], split = ['train','val'],figsize = (20,10), **plot_kwargs ):
+def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10), **plot_kwargs ):
     
+        ''' Plots History
+	
+	Arguments:
+	###############
+	histroy 	:	History to plot
+	plot:list	:   what to plot (what metrics you want to compare)  -> ['loss', 'accuracy']  
+	split:list  :   what split to compare -> ['train', 'val']
+	epoch:int   :   for how many epochs to comapre (cannot be greater than highest epoch of histories)
+	figsize:tuple:  size of plot
+	plot_kwargs :   kwargs to plt.plot to customize plot
+	
+	Returns:
+	##############
+	Plots history 
+	
+	'''
     
     try:
-        hist = pd.DataFrame(history.history)
         cols = []
         for i in plot:
             for j in split:
@@ -181,11 +196,19 @@ def plot_loss_accuracy(history, plot = ['loss','accuracy'], split = ['train','va
                     cols.append(j+'_'+i)
                 else:
                     cols.append(i)
+        
+        #compare to epoch
+        if epoch is None:
+            epoch = history.epoch
 
-        def display(col,plot_num):
+        def display(col, plot_num, history, epoch:int = None, **plot_kwargs):
             plt.subplot(len(plot),len(split),plot_num)
             plt.grid(True)
-            plt.plot(history.epoch, hist[col], 'b', label=col, **plot_kwargs)
+            
+            if epoch == None:
+                epoch = history.epoch
+                
+            plt.plot(epoch, pd.DataFrame(history.history)[col], label=history.model.name, **plot_kwargs)
             plt.title((' '.join(col.split('_'))).upper())
             plt.xlabel('epochs')
     #         plt.ylabel('loss') if 'loss' in col else plt.ylable('accuracy') 
@@ -196,10 +219,9 @@ def plot_loss_accuracy(history, plot = ['loss','accuracy'], split = ['train','va
         plt.suptitle(plot_title)
 
         for plot_num,col in enumerate(cols,1):
-            display(col,plot_num)
-
+            display(col, plot_num, history, epoch, **plot_kwargs)
     except Exception as e:
-        print('Error Occured: ',e
+        print('Error Occured: ',e)
 
 
 def compare_histories(history1,history2, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10), **plot_kwargs ):
