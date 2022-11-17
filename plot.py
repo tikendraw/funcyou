@@ -225,24 +225,7 @@ def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], e
 
 
 def compare_histories(history1,history2, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10), **plot_kwargs ):
-    
-    ''' Compares Histories
-	
-	Arguments:
-	###############
-	histroy1 	:	1st History
-	history1 	:   2nd History
-	plot:list	:   what to plot (what metrics you want to compare)  -> ['loss', 'accuracy']  
-	split:list  :   what split to compare -> ['train', 'val']
-	epoch:int   :   for how many epochs to comapre (cannot be greater than highest epoch of histories)
-	figsize:tuple:  tuple of size
-	plot_kwargs :   kwargs to plt.plot to customize plot
-	
-	Returns:
-	##############
-	Plots plot of len(plot) * len(split) of comparing histories 
-	
-	'''
+
     try:
         history1_df = pd.DataFrame(history1.history)
         history2_df = pd.DataFrame(history2.history)
@@ -285,7 +268,75 @@ def compare_histories(history1,history2, plot = ['loss','accuracy'], split = ['t
     except Exception as e:
         print('Error Occured: ',e)
 
+def compare_histories(histories:list, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10), colors:list = None, **plot_kwargs ):
+    
+        
+    ''' Compares Histories
+	
+	Arguments:
+	###############
+	histroies	:	list of Histories to compare
+	plot:list	:   what to plot (what metrics you want to compare)  -> ['loss', 'accuracy']  
+	split:list  :   what split to compare -> ['train', 'val']
+	epoch:int   :   for how many epochs to comapre (cannot be greater than highest epoch of histories)
+	colors		: 	list of colors for each histories to represent
+	figsize:tuple:  tuple of size
+	plot_kwargs :   kwargs to plt.plot to customize plot
+	
+	Returns:
+	##############
+	Plots plot of len(plot) * len(split) of comparing histories 
+	
+	'''
+	
+    if colors is not None:
+        if len(colors) != len(histories):
+            print('Number of Histories and number of Colors are not equal')
+            colors = None
+            
+    try:
+        cols = []
+        for i in plot:
+            for j in split:
+                if j == 'val':
+                    cols.append(j+'_'+i)
+                else:
+                    cols.append(i)
 
+        #compare to epoch
+        if epoch is None:
+            max_epoch = sorted(histories, key = (lambda x:max(x.epoch)), reverse=True)[0]
+            epoch = max(max_epoch.epoch)+1
+
+        def display(col, plot_num, history, epoch:int = None, **plot_kwargs):
+            plt.subplot(len(plot),len(split),plot_num)
+            plt.grid(True)
+
+            if epoch == None:
+                epoch = history.epoch
+
+            plt.plot(np.arange(epoch), pd.DataFrame(history.history)[col], label=history.model.name, **plot_kwargs)
+            plt.title((' '.join(col.split('_'))).upper())
+            plt.xlabel('epochs')
+            plt.ylabel(col.split('_')[-1])
+            plt.legend()
+
+        plt.figure(figsize = figsize)
+        plot_title = " ".join(plot).upper()+" PLOT"
+        plt.suptitle(plot_title)
+
+        for plot_num,col in enumerate(cols,1):
+
+            if colors is None:
+                for hist in histories:
+                    display(col, plot_num, hist, epoch)
+
+            else:
+                for hist,color in zip(histories,colors):
+                    display(col, plot_num, hist, epoch, color = color)
+
+    except Exception as e:
+        print('Error Occured: ',e)
 
 
 
