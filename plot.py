@@ -53,6 +53,8 @@ from PIL import Image
 import numpy as np
 import matplotlib.image as mpimg
 
+
+
 # function to plot an image and details
 def plot_image_with_details(image_path):
     print(image_path)
@@ -73,6 +75,9 @@ def plot_image_with_details(image_path):
     #image as numpy array
     image_array = np.asarray(image_)
     print('Shape of Image as per numpy', image_array.shape)
+	
+	
+	
 
 def pairplot(df, figsize = (20,20), hue:str = None):
     num_cols = df.select_dtypes('number').columns
@@ -93,9 +98,13 @@ def pairplot(df, figsize = (20,20), hue:str = None):
             else:
                 sns.scatterplot(x = df[col], y = df[col2], hue = df[hue])
 				
+			
+			
 				
 from sklearn.metrics import confusion_matrix
 import itertools
+
+
 def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10, 10), text_size=15, norm=False, savefig=False): 
 
   """Makes a labelled confusion matrix comparing predictions and ground truth labels.
@@ -169,25 +178,27 @@ def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10, 10), text_s
     fig.savefig("confusion_matrix.png")
 
 
+
+
 def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10), **plot_kwargs ):
     
-        ''' Plots History
-	
-	Arguments:
-	###############
-	histroy 	:	History to plot
-	plot:list	:   what to plot (what metrics you want to compare)  -> ['loss', 'accuracy']  
-	split:list  :   what split to compare -> ['train', 'val']
-	epoch:int   :   for how many epochs to comapre (cannot be greater than highest epoch of histories)
-	figsize:tuple:  size of plot
-	plot_kwargs :   kwargs to plt.plot to customize plot
-	
-	Returns:
-	##############
-	Plots history 
-	
-	'''
-    
+    ''' Plots History
+
+    Arguments:
+    ###############
+    histroy 	:	History to plot
+    plot:list	:   what to plot (what metrics you want to compare)  -> ['loss', 'accuracy']  
+    split:list  :   what split to compare -> ['train', 'val']
+    epoch:int   :   for how many epochs to comapre (cannot be greater than highest epoch of histories)
+    figsize:tuple:  size of plot
+    plot_kwargs :   kwargs to plt.plot to customize plot
+
+    Returns:
+    ##############
+    Plots history 
+
+    '''
+
     try:
         cols = []
         for i in plot:
@@ -224,54 +235,9 @@ def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], e
         print('Error Occured: ',e)
 
 
-def compare_histories(history1,history2, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10), **plot_kwargs ):
-
-    try:
-        history1_df = pd.DataFrame(history1.history)
-        history2_df = pd.DataFrame(history2.history)
-
-        cols = []
-        for i in plot:
-            for j in split:
-                if j == 'val':
-                    cols.append(j+'_'+i)
-                else:
-                    cols.append(i)
-        
-        #compare to epoch
-        if epoch is None:
-            if history1.epoch > history2.epoch:
-                epoch = history2.epoch
-            else:
-                epoch = history1.epoch
-
-        def display(col, plot_num, history, epoch:int = None, **plot_kwargs):
-            plt.subplot(len(plot),len(split),plot_num)
-            plt.grid(True)
-            
-            if epoch == None:
-                epoch = history.epoch
-                
-            plt.plot(epoch, pd.DataFrame(history.history)[col], label=history.model.name, **plot_kwargs)
-            plt.title((' '.join(col.split('_'))).upper())
-            plt.xlabel('epochs')
-    #         plt.ylabel('loss') if 'loss' in col else plt.ylable('accuracy') 
-            plt.legend()
-        
-        plt.figure(figsize = figsize)
-        plot_title = " ".join(plot).upper()+" PLOT"
-        plt.suptitle(plot_title)
-
-        for plot_num,col in enumerate(cols,1):
-            display(col, plot_num, history1, epoch, color = 'b')
-            display(col, plot_num, history2, epoch, color = 'r')
-    except Exception as e:
-        print('Error Occured: ',e)
-
-def compare_histories(histories:list, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10), colors:list = None, **plot_kwargs ):
+def compare_histories(histories:list, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10), colors = None, **plot_kwargs ):
     
-        
-    ''' Compares Histories
+        ''' Compares Histories
 	
 	Arguments:
 	###############
@@ -288,7 +254,6 @@ def compare_histories(histories:list, plot = ['loss','accuracy'], split = ['trai
 	Plots plot of len(plot) * len(split) of comparing histories 
 	
 	'''
-	
     if colors is not None:
         if len(colors) != len(histories):
             print('Number of Histories and number of Colors are not equal')
@@ -337,6 +302,8 @@ def compare_histories(histories:list, plot = ['loss','accuracy'], split = ['trai
 
     except Exception as e:
         print('Error Occured: ',e)
+
+
 
 
 
