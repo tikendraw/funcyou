@@ -34,9 +34,15 @@ def create_tensorboard_callback(dir_name, experiment_name):
 	Creates a TensorBoard callback instand to store log files.
 	Stores log files with the filepath:
 	"dir_name/experiment_name/current_datetime/"
-	Args:
+	
+	Args
+	###########################################
 	dir_name: target directory to store TensorBoard log files
 	experiment_name: name of experiment directory (e.g. efficientnet_model_1)
+	
+	Returns
+	##########################################
+	A tensorboard callback
 	"""
 	log_dir = dir_name + "/" + experiment_name + "/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 	tensorboard_callback = tf.keras.callbacks.TensorBoard(
@@ -46,6 +52,33 @@ def create_tensorboard_callback(dir_name, experiment_name):
 	return tensorboard_callback
 
 
+class DisplayCallback(tf.keras.callbacks.Callback):
+	'''
+	Prints model prediction and true values for dataset specified
+	
+	Args
+	###########################################
+	print_on_epoch:int : after how many epochs you want to print the results
+	x:np.array  : input dataset (np.array)
+	y:np.array  : output dataset (np.array)
+	
+	Returns
+	##########################################
+	A Display callback
+	
+	'''
+    def __init__(self,print_on_epoch:int, x:np.array, y:np.array):
+        self.print_on_epoch = print_on_epoch
+        self.x = x
+        self.y = y
+        
+    def predict(self):
+        ypred = tf.squeeze(model.predict(self.x))
+        print('ypred: ',ypred[0].numpy().astype('int'),'\nytrue: ',self.y[0])
+    
+    def on_epoch_end(self, epoch, logs=None):
+        if (epoch%self.print_on_epoch==0):
+            return self.predict()
 
 
 
