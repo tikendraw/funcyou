@@ -20,7 +20,7 @@ def all_metrics(y_true, y_pred, heatmap = True):
 
 
 # Function to evaluate: accuracy, precision, recall, f1-score
-def calculate_results(y_true, y_pred, model_name:str=None):
+def calculate_results(y_true, y_pred, model_name:str=None, discription:str = None):
   """
   Calculates model accuracy, precision, recall and f1 score of a binary classification model.
   Args:
@@ -36,7 +36,8 @@ def calculate_results(y_true, y_pred, model_name:str=None):
                    "accuracy": model_accuracy,
                   "precision": model_precision,
                   "recall": model_recall,
-                  "f1": model_f1}
+                  "f1": model_f1,
+		  "discription":discription}
   return model_results
 
 
