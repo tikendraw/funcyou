@@ -180,7 +180,7 @@ def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10, 10), text_s
 
 
 
-def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10), **plot_kwargs ):
+def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10),colors = ['r','b'], **plot_kwargs ):
     
     ''' Plots History
 
@@ -200,6 +200,14 @@ def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], e
     '''
 
     try:
+        import matplotlib as mpl
+        mpl.rcParams['figure.dpi'] = 500
+        
+		if len(split) == 1:
+			colors = ['r']
+        elif not len(split) == len(colors):
+            raise ValueError('not enogh colors')
+        
         cols = []
         for i in plot:
             for j in split:
@@ -212,27 +220,32 @@ def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], e
         if epoch is None:
             epoch = history.epoch
 
-        def display(col, plot_num, history, epoch:int = None, **plot_kwargs):
+        def display(col, plot_num, history, epoch:int = None,label = None, **plot_kwargs):
             plt.subplot(len(plot),len(split),plot_num)
             plt.grid(True)
             
             if epoch == None:
                 epoch = history.epoch
+            
+            if label is None:
+                label=history.model.name
                 
-            plt.plot(epoch, pd.DataFrame(history.history)[col], label=history.model.name, **plot_kwargs)
+            plt.plot(epoch, pd.DataFrame(history.history)[col], label=label, **plot_kwargs)
             plt.title((' '.join(col.split('_'))).upper())
             plt.xlabel('epochs')
-    #         plt.ylabel('loss') if 'loss' in col else plt.ylable('accuracy') 
             plt.legend()
         
         plt.figure(figsize = figsize)
         plot_title = " ".join(plot).upper()+" PLOT"
         plt.suptitle(plot_title)
 
-        for plot_num,col in enumerate(cols,1):
-            display(col, plot_num, history, epoch, **plot_kwargs)
+        for plot_num,col in enumerate(plot,1):
+            display(col, plot_num, history, epoch, label = 'train',color = colors[0], **plot_kwargs)
+            if 'val' in split:
+                display('val_'+col, plot_num, history, epoch,label = 'val' ,color = colors[1])
     except Exception as e:
         print('Error Occured: ',e)
+
 
 
 def compare_histories(histories:list, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10), colors = None, **plot_kwargs ):
