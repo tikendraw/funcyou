@@ -179,7 +179,6 @@ def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10, 10), text_s
 
 
 
-
 def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10),colors = ['r','b'], **plot_kwargs ):
     
     ''' Plots History
@@ -203,9 +202,7 @@ def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], e
         import matplotlib as mpl
         mpl.rcParams['figure.dpi'] = 500
         
-		if len(split) == 1:
-			colors = ['r']
-        elif not len(split) == len(colors):
+        if not len(colors) == len(split):
             raise ValueError('not enogh colors')
         
         cols = []
@@ -245,6 +242,7 @@ def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], e
                 display('val_'+col, plot_num, history, epoch,label = 'val' ,color = colors[1])
     except Exception as e:
         print('Error Occured: ',e)
+
 
 
 
