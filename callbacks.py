@@ -67,18 +67,18 @@ class DisplayCallback(tf.keras.callbacks.Callback):
 	A Display callback
 	
 	'''
-    def __init__(self,print_on_epoch:int, x:np.array, y:np.array):
-        self.print_on_epoch = print_on_epoch
-        self.x = x
-        self.y = y
-        
-    def predict(self):
-        ypred = tf.squeeze(model.predict(self.x))
-        print('ypred: ',ypred[0].numpy().astype('int'),'\nytrue: ',self.y[0])
-    
-    def on_epoch_end(self, epoch, logs=None):
-        if (epoch%self.print_on_epoch==0):
-            return self.predict()
+	def __init__(self,print_on_epoch:int, x:np.array, y:np.array):
+		self.print_on_epoch = print_on_epoch
+		self.x = x
+		self.y = y
+		
+	def predict(self):
+		ypred = tf.squeeze(model.predict(self.x))
+		print('ypred: ',ypred[0].numpy().astype('int'),'\nytrue: ',self.y[0])
+
+	def on_epoch_end(self, epoch, logs=None):
+		if (epoch%self.print_on_epoch==0):
+			return self.predict()
 
 
 
