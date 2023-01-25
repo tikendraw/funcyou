@@ -52,7 +52,21 @@ def variable_memory():
 							 key= lambda x: -x[1])[:10]:
 		print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
 
-	
+		
+def download_universal_sentence_encoder():
+
+    print('downloading universal sentence encoder...')
+    !wget https://storage.googleapis.com/tfhub-modules/google/universal-sentence-encoder/4.tar.gz
+    print('Downloaded universal sentence encoder.')
+    # Extracting
+    try:
+        !mkdir universal_sentence_encoder
+        print('Extracting universal sentence encoder....')
+        ! tar -xf 4.tar.gz --directory ./universal_sentence_encoder
+        print('Extracted.')
+    except Exception as e:
+        print(e)
+
 def main():
 	...
 	
