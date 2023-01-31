@@ -1,4 +1,6 @@
 import os
+import tarfile
+import wget
 
 # CONTENTS OF DRIVE
 def dir_walkthrough(path):
@@ -53,19 +55,26 @@ def variable_memory():
 		print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
 
 		
-def download_universal_sentence_encoder():
-
-    print('downloading universal sentence encoder...')
-    !wget https://storage.googleapis.com/tfhub-modules/google/universal-sentence-encoder/4.tar.gz
-    print('Downloaded universal sentence encoder.')
-    # Extracting
+def download_USEncoder():
     try:
-        !mkdir universal_sentence_encoder
+        print('downloading universal sentence encoder...')
+        use_filename = wget.download(use_url)
+
+        print('Downloaded!')
+        # Extracting
+        os.makedirs('universal_sentence_encoder', exist_ok = True)
         print('Extracting universal sentence encoder....')
-        ! tar -xf 4.tar.gz --directory ./universal_sentence_encoder
+        # open file
+        file = tarfile.open(use_filename)
+        
+        # extracting file
+        file.extractall('./universal_sentence_encoder')
+        
+        file.close()
         print('Extracted.')
     except Exception as e:
         print(e)
+
 
 def main():
 	...
