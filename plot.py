@@ -316,6 +316,30 @@ def compare_histories(histories:list, plot = ['loss','accuracy'], split = ['trai
 
 
 
+def distplot_axis(x:np.array, axis:list=list(range(95,100)), percent:int = 99,where_text:int = 5000,xlim:list=None, ylim:list=None, **kwargs):
+    # plt.figure(figsize = (15,7))
+    plt.grid()
+
+    plt.hist(x , bins = 50, **kwargs)
+    # Title Word Count distribution
+    try:
+        plt.xlim(xlim[0], xlim[1])
+        plt.ylim(ylim[0], ylim[1])
+    except:
+        pass
+
+    plt.xlabel('word length')
+    plt.ylabel('Count')
+    for i in axis:
+        plt.axvline(x = np.percentile(x, i), color = 'b', label = 'axvline - full height')
+        # random_pixel = 
+        try:
+            plt.text(np.percentile(x, i),where_text,f'{i} percent',rotation=90)
+        except:
+            pass
+
+    plt.title(f'Text Word Count distribution: {np.percentile(x, percent)} words cover {percent}% of text data')
+
 
 
 
