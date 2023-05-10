@@ -345,6 +345,28 @@ def distplot_axis(x:np.array, axis:list=list(range(95,100)), percent:int = 99,wh
 
 
 
+def plot_grid(*plots, grid_shape=(2, 2), figsize=(10, 8), **kwargs):
+    num_plots = len(plots)
+    rows, cols = grid_shape
+
+    # Adjust figure size based on grid shape
+    figsize = (figsize[0] * cols, figsize[1] * rows)
+
+    fig, axes = plt.subplots(rows, cols, figsize=figsize, **kwargs)
+
+    # Iterate over the plots and assign them to the corresponding axis
+    for i, plot in enumerate(plots):
+        ax = axes[i // cols, i % cols]  # Get the corresponding axis
+        ax.plot(plot)  # Plot the data
+
+    # Remove empty subplots if necessary
+    if num_plots < rows * cols:
+        for i in range(num_plots, rows * cols):
+            fig.delaxes(axes[i // cols, i % cols])
+
+    plt.tight_layout()  # Adjust spacing between subplots
+    plt.show()
+
 
 
 
