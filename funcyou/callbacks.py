@@ -7,7 +7,34 @@ import random
 
 def create_model_checkpoint(model_name, save_dir, monitor:str = 'val_loss',verbose: int = 0, save_best_only: bool = True, save_weights_only: bool = False,
                             mode: str = 'auto', save_freq='epoch', options=None, initial_value_threshold=None, **kwargs):
-    model_name = model_name+'-'+ str(datetime.datetime.now())
+	"""
+	Creates a ModelCheckpoint callback instand to store model weights.
+	Stores model weights with the filepath:
+	"save_dir/model_name-{str(datetime.datetime.now())}"
+	
+	Args
+	###########################################
+	model_name: name of model directory (e.g. efficientnet_model_1)
+
+	save_dir: target directory to store model weights
+	
+	monitor: metric to monitor
+	
+	verbose: verbosity mode
+	
+	save_best_only: if True, only save the model if `monitor` has improved.
+	
+	save_weights_only: if True, then only the model's weights will be saved
+	
+	mode: one of {auto, min, max}. In `min` mode, the model will be minimized
+	    by the quantity monitored, in `max` mode the model will be maximized
+	    (by the quantity monitored). In `auto` mode, the direction is
+	    automatically inferred from the name of the monitored quantity.
+	
+	save_freq: one of {epoch, batch}. In `epoch` mode, the callback saves the
+	"""
+
+    model_name = f'{model_name}-{str(datetime.datetime.now())}'
     dir = os.path.join(save_dir, model_name)
 
     if not os.path.exists(dir):
@@ -30,7 +57,7 @@ def create_model_checkpoint(model_name, save_dir, monitor:str = 'val_loss',verbo
 
 
 def create_tensorboard_callback(dir_name, experiment_name):
-	"""
+    """
 	Creates a TensorBoard callback instand to store log files.
 	Stores log files with the filepath:
 	"dir_name/experiment_name/current_datetime/"
@@ -44,12 +71,15 @@ def create_tensorboard_callback(dir_name, experiment_name):
 	##########################################
 	A tensorboard callback
 	"""
-	log_dir = dir_name + "/" + experiment_name + "/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-	tensorboard_callback = tf.keras.callbacks.TensorBoard(
-	  log_dir=log_dir
-	)
-	print(f"Saving TensorBoard log files to: {log_dir}")
-	return tensorboard_callback
+    log_dir = (
+        f"{dir_name}/{experiment_name}/"
+        + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    )
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(
+      log_dir=log_dir
+    )
+    print(f"Saving TensorBoard log files to: {log_dir}")
+    return tensorboard_callback
 
 
 class DisplayCallback(tf.keras.callbacks.Callback):
