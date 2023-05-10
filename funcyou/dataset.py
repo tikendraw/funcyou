@@ -1,7 +1,12 @@
-import os, random, shutil
+
+import random
 from pathlib import Path
-import os
 import sys
+import os
+import pathlib
+import subprocess
+import shutil
+from tqdm import tqdm
 
 # make data splitstr
 def make_data_split(
@@ -86,75 +91,147 @@ def make_data_split(
         print("Exception Occured: ", e)
 
 
-import os, random, shutil
-from pathlib import Path
-import os
-import sys
 
-# download_kaggle_dataset
+
 def download_kaggle_dataset(api_command: str = None, url: str = None, unzip=False):
-
     """
-    This function downloads kaggle dataset
+    This function downloads a Kaggle dataset.
 
-    Note: keep kaggle.json in curent dir or your google drive
-    args :
-
-            url  = link to the dataset  https://www.kaggle.com/datasets/akshaydattatraykhare/diabetes-dataset
-
-            api_command = copied command from the kaggle dataset page (easiest way, just copy and paste)
-
-            unzip = True , unzip the downloaded zip file
+    Note: keep kaggle.json in the current directory or your Google Drive.
+    Args:
+        url: Link to the dataset, e.g., https://www.kaggle.com/datasets/akshaydattatraykhare/diabetes-dataset
+        api_command: Copied command from the Kaggle dataset page (easiest way, just copy and paste).
+        unzip: True to unzip the downloaded zip file.
     """
 
     IN_COLAB = "google.colab" in sys.modules
 
     if IN_COLAB:
-        kaggle_path = "/root/.kaggle/"
-
+        kaggle_path = pathlib.Path("/root/.kaggle/")
     else:
-        kaggle_path = "~/.kaggle"
+        kaggle_path = pathlib.Path("~/.kaggle").expanduser()
 
-    # create the kaggle path
-    if not os.path.exists(kaggle_path):
-        os.makedirs(kaggle_path)
+    # Create the Kaggle path
+    kaggle_path.mkdir(parents=True, exist_ok=True)
 
-    # mount gdrive and copy kaggle.json
-    try:
-        os.system(f"cp kaggle.json {kaggle_path}")
-    except Exception as e:
-        raise ValueError(e)
+    # Copy kaggle.json
+    kaggle_json_path = kaggle_path / "kaggle.json"
+    shutil.copy("kaggle.json", kaggle_json_path)
 
-    # #giving permissino to file
-    kaggle_file_path = os.path.join(kaggle_path, "kaggle.json")
-    os.system(f"chmod 600 {kaggle_file_path}")
+    # Set permissions for kaggle.json
+    kaggle_json_path.chmod(0o600)
 
     if url:
-        url = url.split("/")
-        idx = url.index("www.kaggle.com")
-        kind = url[idx + 1]
+        url_parts = url.split("/")
+        idx = url_parts.index("www.kaggle.com")
+        kind = url_parts[idx + 1]
 
         if kind == "datasets":
-            person = url[idx + 2]
-            dataname = url[idx + 3]
-
+            person = url_parts[idx + 2]
+            dataname = url_parts[idx + 3]
             api_command = f"kaggle {kind} download -d {person}/{dataname}"
         else:
-            dataname = url[idx + 2]
-            print(
-                "Note: Make Sure you have agreed to Competition Rules. Else we can't download it"
-            )
+            dataname = url_parts[idx + 2]
+            print("Note: Make sure you have agreed to Competition Rules. Else we can't download it.")
+
             api_command = f"kaggle {kind} download -c {dataname}"
 
     print(api_command)
 
     try:
-        if unzip == True:
-            print(os.system(api_command + " --unzip"), flush=True)
-        else:
-            print(os.system(api_command), flush=True)
+        _extracted_from_download_kaggle_dataset_(api_command, unzip)
     except Exception as e:
-        print("Error Occured: ", e)
+        print("Error Occurred:", e)
+
+def download_kaggle_dataset(api_command: str = None, url: str = None, unzip=False):
+    """
+    This function downloads a Kaggle dataset.
+
+    Note: keep kaggle.json in the current directory or your Google Drive.
+    Args:
+        url: Link to the dataset, e.g., https://www.kaggle.com/datasets/akshaydattatraykhare/diabetes-dataset
+        api_command: Copied command from the Kaggle dataset page (easiest way, just copy and paste).
+        unzip: True to unzip the downloaded zip file.
+    """
+
+    IN_COLAB = "google.colab" in sys.modules
+
+    if IN_COLAB:
+        kaggle_path = pathlib.Path("/root/.kaggle/")
+    else:
+        kaggle_path = pathlib.Path("~/.kaggle").expanduser()
+
+    # Create the Kaggle path
+    kaggle_path.mkdir(parents=True, exist_ok=True)
+
+    # Copy kaggle.json
+    kaggle_json_path = kaggle_path / "kaggle.json"
+    shutil.copy("kaggle.json", kaggle_json_path)
+
+    # Set permissions for kaggle.json
+    kaggle_json_path.chmod(0o600)
+
+    if url:
+        url_parts = url.split("/")
+        idx = url_parts.index("www.kaggle.com")
+        kind = url_parts[idx + 1]
+
+        if kind == "datasets":
+            person = url_parts[idx + 2]
+            dataname = url_parts[idx + 3]
+            api_command = f"kaggle {kind} download -d {person}/{dataname}"
+        else:
+            dataname = url_parts[idx + 2]
+            print("Note: Make sure you have agreed to Competition Rules. Else we can't download it.")
+
+            api_command = f"kaggle {kind} download -c {dataname}"
+
+    print(api_command)
+
+    try:
+        _extracted_from_download_kaggle_dataset_(api_command, unzip)
+    except Exception as e:
+        print("Error Occurred:", e)
+
+
+# TODO Rename this here and in `download_kaggle_dataset`
+def _extracted_from_download_kaggle_dataset_(api_command, unzip):
+    command = f"{api_command} --unzip" if unzip else api_command
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    progress_bar = tqdm(total=None, unit='B', unit_scale=True)
+
+    for line in process.stdout:
+        if progress_match := re.search(r"(\d+)%", line):
+            progress = float(progress_match.group(1))
+            progress_bar.update(progress - progress_bar.n)
+
+    process.stdout.close()
+    return_code = process.wait()
+
+    progress_bar.close()
+
+    if return_code != 0:
+        raise subprocess.CalledProcessError(return_code, command)
+
+
+# TODO Rename this here and in `download_kaggle_dataset`
+def _extracted_from_download_kaggle_dataset_(api_command, unzip):
+    command = f"{api_command} --unzip" if unzip else api_command
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    progress_bar = tqdm(total=None, unit='B', unit_scale=True)
+
+    for line in process.stdout:
+        if progress_match := re.search(r"(\d+)%", line):
+            progress = float(progress_match.group(1))
+            progress_bar.update(progress - progress_bar.n)
+
+    process.stdout.close()
+    return_code = process.wait()
+
+    progress_bar.close()
+
+    if return_code != 0:
+        raise subprocess.CalledProcessError(return_code, command)
 
 
 def main():

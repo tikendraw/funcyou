@@ -21,24 +21,25 @@ def all_metrics(y_true, y_pred, heatmap = True):
 
 # Function to evaluate: accuracy, precision, recall, f1-score
 def calculate_results(y_true, y_pred, model_name:str=None, discription:str = None):
-  """
+    """
   Calculates model accuracy, precision, recall and f1 score of a binary classification model.
   Args:
       y_true: true labels in the form of a 1D array
       y_pred: predicted labels in the form of a 1D array
   Returns a dictionary of accuracy, precision, recall, f1-score.
   """
-  # Calculate model accuracy
-  model_accuracy = accuracy_score(y_true, y_pred) * 100
-  # Calculate model precision, recall and f1 score using "weighted average
-  model_precision, model_recall, model_f1, _ = precision_recall_fscore_support(y_true, y_pred, average="weighted")
-  model_results = {"model":model_name,
-                   "accuracy": model_accuracy,
-                  "precision": model_precision,
-                  "recall": model_recall,
-                  "f1": model_f1,
-		  "discription":discription}
-  return model_results
+    # Calculate model accuracy
+    model_accuracy = accuracy_score(y_true, y_pred) * 100
+    # Calculate model precision, recall and f1 score using "weighted average
+    model_precision, model_recall, model_f1, _ = precision_recall_fscore_support(y_true, y_pred, average="weighted")
+    return {
+        "model": model_name,
+        "accuracy": model_accuracy,
+        "precision": model_precision,
+        "recall": model_recall,
+        "f1": model_f1,
+        "discription": discription,
+    }
 
 
 

@@ -33,24 +33,23 @@ def create_model_checkpoint(model_name, save_dir, monitor:str = 'val_loss',verbo
 	
 	save_freq: one of {epoch, batch}. In `epoch` mode, the callback saves the
 	"""
+	model_name = f'{model_name}-{str(datetime.datetime.now())}'
+	directory = os.path.join(save_dir, model_name)
 
-    model_name = f'{model_name}-{str(datetime.datetime.now())}'
-    dir = os.path.join(save_dir, model_name)
+	if not os.path.exists(directory):
+		os.makedirs(directory)
 
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-
-    return tf.keras.callbacks.ModelCheckpoint(
-                                                dir,
-                                                monitor = monitor,
-                                                verbose = verbose,
-                                                save_best_only = save_best_only,
-                                                save_weights_only = save_weights_only,
-                                                mode = mode,
-                                                save_freq = save_freq,
-                                                options=options,
-                                                initial_value_threshold = initial_value_threshold,
-                                                **kwargs)
+	return tf.keras.callbacks.ModelCheckpoint(
+												directory,
+												monitor = monitor,
+												verbose = verbose,
+												save_best_only = save_best_only,
+												save_weights_only = save_weights_only,
+												mode = mode,
+												save_freq = save_freq,
+												options=options,
+												initial_value_threshold = initial_value_threshold,
+												**kwargs)
 
 
 
