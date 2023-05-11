@@ -140,7 +140,7 @@ def get_feature_names(column_transformer):
 
 
 
-def count_files_by_type(directory, show_hidden_dir=False, exclude=None, include=None):
+def dir_walk(directory, show_hidden_dir=False, exclude=None, include=None):
     """
     Walks through a directory and its subdirectories recursively and counts the number of files of each MIME type.
 
