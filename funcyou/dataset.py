@@ -7,7 +7,7 @@ import pathlib
 import subprocess
 import shutil
 from tqdm import tqdm
-
+import regex as re
 # make data splitstr
 def make_data_split(
     main_path,
