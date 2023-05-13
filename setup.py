@@ -10,6 +10,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'matplotlib',
+        'wget'
         # Add other dependencies here
     ],
 )
