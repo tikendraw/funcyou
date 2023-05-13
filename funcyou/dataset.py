@@ -114,7 +114,7 @@ def download_kaggle_dataset(api_command: str = None, url: str = None, unzip=Fals
 
   # Copy kaggle.json
   if kaggle_json_filepath is not None:
-    if not kaggle_json_path.endswith('json'):
+    if not kaggle_json_filepath.endswith('json'):
         kaggle_json_path = kaggle_path / "kaggle.json"
     else:
         pass
