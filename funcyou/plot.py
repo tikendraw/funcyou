@@ -3,7 +3,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import seaborn as sns
-
+import pandas as pd
 from PIL import Image
 import numpy as np
 import matplotlib.image as mpimg
