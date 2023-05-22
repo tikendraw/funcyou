@@ -176,7 +176,7 @@ def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10, 10), text_s
 
 
 
-def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], epoch:int = None, figsize = (20,10),colors = ['r','b'], **plot_kwargs ):
+def plot_history(history, plot:list=None, splits:list=None, epoch:int = None, figsize = (20,10),colors = ['r','b'], **plot_kwargs ):
 
     ''' Plots History
 
@@ -199,12 +199,12 @@ def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], e
         import matplotlib as mpl
         mpl.rcParams['figure.dpi'] = 500
 
-        if len(colors) != len(split):
+        if len(colors) != len(splits):
             raise ValueError('not enogh colors')
 
         cols = []
         for i in plot:
-            for j in split:
+            for j in splits:
                 if j == 'val':
                     cols.append(f'{j}_{i}')
                 else:
@@ -215,7 +215,7 @@ def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], e
             epoch = history.epoch
 
         def display(col, plot_num, history, epoch:int = None,label = None, **plot_kwargs):
-            plt.subplot(len(plot),len(split),plot_num)
+            plt.subplot(len(plot),len(splits),plot_num)
             plt.grid(True)
 
             if epoch is None:
@@ -225,7 +225,7 @@ def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], e
                 label=history.model.name
 
             plt.plot(epoch, pd.DataFrame(history.history)[col], label=label, **plot_kwargs)
-            plt.title((' '.join(col.split('_'))).upper())
+            plt.title((' '.join(col.splits('_'))).upper())
             plt.xlabel('epochs')
             plt.legend()
 
@@ -235,7 +235,7 @@ def plot_history(history, plot = ['loss','accuracy'], split = ['train','val'], e
 
         for plot_num,col in enumerate(plot,1):
             display(col, plot_num, history, epoch, label = 'train',color = colors[0], **plot_kwargs)
-            if 'val' in split:
+            if 'val' in splits:
                 display(
                     f'val_{col}',
                     plot_num,
