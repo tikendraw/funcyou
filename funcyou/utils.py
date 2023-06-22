@@ -15,14 +15,6 @@ import shutil
 import numpy as np
 
 def variable_memory():
-    def sizeof_fmt(num, suffix="B"):
-        """by Fred Cirera,  https://stackoverflow.com/a/1094933/1870254, modified"""
-        for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
-            if abs(num) < 1024.0:
-                return "%3.1f %s%s" % (num, unit, suffix)
-            num /= 1024.0
-        return "%.1f %s%s" % (num, "Yi", suffix)
-
     print('''
     def sizeof_fmt(num, suffix="B"):
         """by Fred Cirera,  https://stackoverflow.com/a/1094933/1870254, modified"""
@@ -39,35 +31,7 @@ def variable_memory():
     )[:10]:
         print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
         '''
-
     )
-
-    for name, size in sorted(
-        ((name, sys.getsizeof(value)) for name, value in locals().items()),
-        key=lambda x: -x[1],
-    )[:10]:
-        print("{:>30}: {:>8}".format(name, sizeof_fmt(size)))
-
-
-def download_USEncoder():
-    try:
-        print("downloading universal sentence encoder...")
-        use_filename = wget.download(use_url)
-
-        print("Downloaded!")
-        # Extracting
-        os.makedirs("universal_sentence_encoder", exist_ok=True)
-        print("Extracting universal sentence encoder....")
-        # open file
-        file = tarfile.open(use_filename)
-
-        # extracting file
-        file.extractall("./universal_sentence_encoder")
-
-        file.close()
-        print("Extracted.")
-    except Exception as e:
-        print(e)
 
 
 def get_feature_names(column_transformer):
