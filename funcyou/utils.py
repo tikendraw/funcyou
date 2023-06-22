@@ -1,6 +1,5 @@
 import os
 import tarfile
-import wget
 import sklearn
 import warnings
 import pandas as pd
