@@ -10,7 +10,9 @@ setup(
     packages=find_packages(),
     install_requires=[
         'matplotlib',
-        'wget'
+        'sklearn',
+        'pandas',
+        'numpy',
         # Add other dependencies here
     ],
 )
