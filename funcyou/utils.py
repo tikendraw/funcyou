@@ -173,7 +173,7 @@ def dir_walk(directory, show_hidden_dir=False, exclude=None, include=None):
     return pd.DataFrame(final)
 
 
-def printt(*args, sep=' ', end='\n',terminal_width:int=None, file=sys.stdout, flush=False):
+def printt(*args, sep=' ', end='\n',terminal_width:int=170, file=sys.stdout, flush=False):
     
     if terminal_width is None:
         terminal_width = shutil.get_terminal_size().columns
