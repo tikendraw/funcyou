@@ -176,74 +176,47 @@ def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10, 10), text_s
 
 
 
-def plot_history(history, plot:list=None, splits:list=None, epoch:int = None, figsize = (20,10),colors = ['r','b'], **plot_kwargs ):
+def plot_history(history, metrics=['loss', 'accuracy'], colors=None, markers=None, linestyles=None, figsize=(15, 4)):
+    """
+    Plot training history metrics using Matplotlib.
 
-    ''' Plots History
+    Args:
+        history (History): History object returned by model.fit.
+        metrics (list): List of metrics to plot (e.g., ['loss', 'accuracy']).
+        colors (list): List of colors for corresponding metrics.
+        markers (list): List of markers for corresponding metrics.
+        linestyles (list): List of line styles for corresponding metrics.
+        figsize (tuple): Figure size (width, height).
+    """
+    if colors is None:
+        colors = ['blue', 'red', 'orange', 'green', 'purple', 'brown', 'pink', 'gray']
+    if markers is None:
+        markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p']
+    if linestyles is None:
+        linestyles = ['-', '--', '-.', ':']
 
-    Arguments:
-    ###############
-    histroy 	:	History to plot
-    plot:list	:   what to plot (what metrics you want to compare)  -> ['loss', 'accuracy']  
-    split:list  :   what split to compare -> ['train', 'val']
-    epoch:int   :   for how many epochs to comapre (cannot be greater than highest epoch of histories)
-    figsize:tuple:  size of plot
-    plot_kwargs :   kwargs to plt.plot to customize plot
 
-    Returns:
-    ##############
-    Plots history 
-
-    '''
-
-    
-    import matplotlib as mpl
-    mpl.rcParams['figure.dpi'] = 500
-
-    if len(colors) != len(splits):
-        raise ValueError('not enogh colors')
-
-    cols = []
-    for i in plot:
-        for j in splits:
-            if j == 'val':
-                cols.append(f'{j}_{i}')
-            else:
-                cols.append(i)
-
-    #compare to epoch
-    if epoch is None:
-        epoch = history.epoch
-
-    def display(col, plot_num, history, epoch:int = None,label = None, **plot_kwargs):
-        plt.subplot(len(plot),len(splits),plot_num)
+    for metric_idx, metric in enumerate(metrics):
+        plt.figure(figsize=figsize)
+        plt.title(f'{metric.capitalize()}')
         plt.grid(True)
 
-        if epoch is None:
-            epoch = history.epoch
+        for i, metric_type in enumerate(['train', 'val']):
+            metric_name = metric if metric_type == 'train' else f'val_{metric}'
 
-        if label is None:
-            label=history.model.name
+            data = history.history.get(metric_name, None)
+            if data is not None:
+                plt.plot(range(1, len(data) + 1), data,
+                         label=f'{metric_type.capitalize()} {metric}',
+                         color=colors[i % len(colors)],
+                         marker=markers[i % len(markers)],
+                         linestyle=linestyles[i % len(linestyles)])
 
-        plt.plot(epoch, pd.DataFrame(history.history)[col], label=label, **plot_kwargs)
-        plt.title((' '.join(col.splits('_'))).upper())
-        plt.xlabel('epochs')
+        plt.xlabel('Epoch')
+        plt.ylabel(metric.capitalize())
         plt.legend()
-
-    plt.figure(figsize = figsize)
-    plot_title = " ".join(plot).upper()+" PLOT"
-    plt.suptitle(plot_title)
-
-    for plot_num,col in enumerate(plot,1):
-        display(col, plot_num, history, epoch, label = 'train',color = colors[0], **plot_kwargs)
-        if 'val' in splits:
-            display(
-                f'val_{col}',
-                plot_num,
-                history,
-                epoch,
-                label='val',
-                color=colors[1],
-            )
+        
+    plt.show()
 
 
 
