@@ -195,57 +195,55 @@ def plot_history(history, plot:list=None, splits:list=None, epoch:int = None, fi
 
     '''
 
-    try:
-        import matplotlib as mpl
-        mpl.rcParams['figure.dpi'] = 500
+    
+    import matplotlib as mpl
+    mpl.rcParams['figure.dpi'] = 500
 
-        if len(colors) != len(splits):
-            raise ValueError('not enogh colors')
+    if len(colors) != len(splits):
+        raise ValueError('not enogh colors')
 
-        cols = []
-        for i in plot:
-            for j in splits:
-                if j == 'val':
-                    cols.append(f'{j}_{i}')
-                else:
-                    cols.append(i)
+    cols = []
+    for i in plot:
+        for j in splits:
+            if j == 'val':
+                cols.append(f'{j}_{i}')
+            else:
+                cols.append(i)
 
-        #compare to epoch
+    #compare to epoch
+    if epoch is None:
+        epoch = history.epoch
+
+    def display(col, plot_num, history, epoch:int = None,label = None, **plot_kwargs):
+        plt.subplot(len(plot),len(splits),plot_num)
+        plt.grid(True)
+
         if epoch is None:
             epoch = history.epoch
 
-        def display(col, plot_num, history, epoch:int = None,label = None, **plot_kwargs):
-            plt.subplot(len(plot),len(splits),plot_num)
-            plt.grid(True)
+        if label is None:
+            label=history.model.name
 
-            if epoch is None:
-                epoch = history.epoch
+        plt.plot(epoch, pd.DataFrame(history.history)[col], label=label, **plot_kwargs)
+        plt.title((' '.join(col.splits('_'))).upper())
+        plt.xlabel('epochs')
+        plt.legend()
 
-            if label is None:
-                label=history.model.name
+    plt.figure(figsize = figsize)
+    plot_title = " ".join(plot).upper()+" PLOT"
+    plt.suptitle(plot_title)
 
-            plt.plot(epoch, pd.DataFrame(history.history)[col], label=label, **plot_kwargs)
-            plt.title((' '.join(col.splits('_'))).upper())
-            plt.xlabel('epochs')
-            plt.legend()
-
-        plt.figure(figsize = figsize)
-        plot_title = " ".join(plot).upper()+" PLOT"
-        plt.suptitle(plot_title)
-
-        for plot_num,col in enumerate(plot,1):
-            display(col, plot_num, history, epoch, label = 'train',color = colors[0], **plot_kwargs)
-            if 'val' in splits:
-                display(
-                    f'val_{col}',
-                    plot_num,
-                    history,
-                    epoch,
-                    label='val',
-                    color=colors[1],
-                )
-    except Exception as e:
-        print('Error Occured: ',e)
+    for plot_num,col in enumerate(plot,1):
+        display(col, plot_num, history, epoch, label = 'train',color = colors[0], **plot_kwargs)
+        if 'val' in splits:
+            display(
+                f'val_{col}',
+                plot_num,
+                history,
+                epoch,
+                label='val',
+                color=colors[1],
+            )
 
 
 
