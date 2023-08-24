@@ -231,6 +231,7 @@ class Vocabulary:
             self.vocab_size += 1
 
     def build_vocab(self, tokenized_data, max_tokens, min_freq):
+        # sourcery skip: dict-assign-update-to-union
         self.counter = Counter()
         for words in tokenized_data:
             self.counter.update(words)
