@@ -8,6 +8,10 @@ import subprocess
 import shutil
 from tqdm import tqdm
 import regex as re
+import json
+from kaggle.api.kaggle_api_extended import KaggleApi
+import shutil
+
 # make data splitstr
 def make_data_split(
     main_path,
@@ -90,80 +94,69 @@ def make_data_split(
     except Exception as e:
         print("Exception Occured: ", e)
 
-import pathlib
-import sys
-import subprocess
-import shutil
-import re
-from tqdm import tqdm
-
-def download_kaggle_dataset(api_command: str = None, url: str = None, unzip=False, kaggle_json_filepath: str = None):
+def download_kaggle_resource(resource, download_path="dataset", kaggle_json_path=None):
     """
-    This function downloads a Kaggle dataset.
+    Downloads a Kaggle dataset or competition using the Kaggle API key stored in kaggle.json.
 
     Args:
-        url: Link to the dataset, e.g., https://www.kaggle.com/datasets/akshaydattatraykhare/diabetes-dataset
-        api_command: Copied command from the Kaggle dataset page (easiest way, just copy and paste).
-        unzip: True to unzip the downloaded zip file.
-        kaggle_json_filepath: The filepath of the `kaggle.json` file.
+        resource (str): URL of the Kaggle dataset/competition or API command.
+        download_path (str): Path where the resource will be downloaded.
+        kaggle_json_path (str, optional): Path to the kaggle.json file containing the API key.
     """
 
-    IN_COLAB = "google.colab" in sys.modules
-
-    if IN_COLAB:
-        kaggle_path = pathlib.Path("/root/.kaggle/")
-    else:
-        kaggle_path = pathlib.Path("~/.kaggle").expanduser()
-
-    # Create the Kaggle path
-    kaggle_path.mkdir(parents=True, exist_ok=True)
-
-    # Copy kaggle.json
-    if kaggle_json_filepath is not None:
-        if not kaggle_json_filepath.endswith('.json'):
-            kaggle_json_filepath = pathlib.Path(kaggle_json_filepath) / "kaggle.json"
-        shutil.copy(kaggle_json_filepath, kaggle_path)
-
-    kaggle_json_path = kaggle_path / "kaggle.json"
-
-    # Set permissions for kaggle.json
-    kaggle_json_path.chmod(0o600)
-
-    if url:
-        url_parts = url.split("/")
-        idx = url_parts.index("www.kaggle.com")
-        kind = url_parts[idx + 1]
-
-        if kind == "datasets":
-            person = url_parts[idx + 2]
-            dataname = url_parts[idx + 3]
-            api_command = f"kaggle {kind} download -d {person}/{dataname}"
+    # Find the path to kaggle.json if not provided
+    default_path = os.path.expanduser("~/.kaggle/kaggle.json")
+    if not os.path.exists(default_path):
+        if kaggle_json_path is not None:
+            shutil.copy(kaggle_json_path, default_path)
         else:
-            dataname = url_parts[idx + 2]
-            print("Note: Make sure you have agreed to Competition Rules. Else we can't download it.")
-            api_command = f"kaggle {kind} download -c {dataname}"
+            raise ValueError(
+                "kaggle.json not found in default location and kaggle_json_path not provided."
+            )
 
-    print(api_command)
+    # Load the Kaggle API key from kaggle.json
+    with open(kaggle_json_path) as f:
+        kaggle_credentials = json.load(f)
 
-    try:
-        _extracted_from_download_kaggle_dataset(api_command, unzip)
-    except Exception as e:
-        print("Error Occurred:", e)
+    # Configure the Kaggle API
+    api = KaggleApi()
+    api.authenticate()
 
+    if resource.startswith("kaggle "):
+        # Run the provided API command directly
+        os.system(resource)
+        return
 
-# TODO Rename this here and in `download_kaggle_dataset`
-def _extracted_from_download_kaggle_dataset(api_command, unzip):
-    command = f"{api_command} --unzip" if unzip else api_command
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    progress_bar = tqdm(total=None, unit='B', unit_scale=True)
+    # Handle URL-based resource
+    url_parts = resource.split("/")
 
-    for line in process.stdout:
-        if progress_match := re.search(r"(\d+)%", line):
-            progress = float(progress_match.group(1))
-            progress_bar.update(progress - progress_bar.n)
+    if "datasets" in url_parts:
+        resource_type = "datasets"
+        dataset_part_index = url_parts.index("datasets") + 1
+    elif "competitions" in url_parts:
+        resource_type = "competitions"
+        competition_part_index = url_parts.index("competitions") + 1
+    else:
+        raise ValueError("Invalid Kaggle URL")
 
-    process.stdout.close()
-    return_code = process.wait()
+    # Extract resource name from the URL
+    resource_name = url_parts[-1]
+
+    # Define the download path for the resource
+    resource_download_path = os.path.join(download_path, resource_name)
+
+    # Create the directory if it doesn't exist
+    os.makedirs(resource_download_path, exist_ok=True)
+
+    # Download the resource
+    if resource_type == "datasets":
+        dataset_path = "/".join(url_parts[dataset_part_index:])
+        api.dataset_download_files(dataset_path, path=resource_download_path)
+    elif resource_type == "competitions":
+        competition_path = "/".join(url_parts[competition_part_index:])
+        api.competition_download_files(competition_path, path=resource_download_path)
+
+    print(f"Resource downloaded to: {resource_download_path}")
 
 
 def main():
