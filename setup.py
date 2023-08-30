@@ -13,6 +13,7 @@ setup(
         'sklearn',
         'pandas',
         'numpy',
+        'kaggle'
         # Add other dependencies here
     ],
 )

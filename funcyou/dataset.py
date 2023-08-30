@@ -1,13 +1,9 @@
 
 import random
 from pathlib import Path
-import sys
 import os
-import pathlib
-import subprocess
 import shutil
-from tqdm import tqdm
-import regex as re
+import re
 import json
 from kaggle.api.kaggle_api_extended import KaggleApi
 import shutil
@@ -20,7 +16,6 @@ def make_data_split(
     val=True,
     val_split_ratio: float = 0.1,
     shuffle=True,
-    unzip=True,
 ):
     """
     Make data split Train/test/val
@@ -159,7 +154,6 @@ def download_kaggle_resource(resource, download_path="dataset", kaggle_json_path
     print(f"Resource downloaded to: {resource_download_path}")
 
 
-def main():
 
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    print('hello world')
