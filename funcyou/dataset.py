@@ -1,11 +1,11 @@
 
-import random
-from pathlib import Path
-import os
-import shutil
-import re
 import json
+import os
+import random
+import re
 import shutil
+from pathlib import Path
+
 
 # make data splitstr
 def make_data_split(
@@ -99,7 +99,8 @@ def download_kaggle_resource(resource, download_path="dataset", kaggle_json_path
     """
 
     # Find the path to kaggle.json if not provided
-    default_path = os.path.expanduser("~/.kaggle/kaggle.json")
+    default_path = Path(os.path.expanduser("~/.kaggle/kaggle.json"))
+    default_path.parent.mkdir(exist_ok=True)
     if not os.path.exists(default_path):
         if kaggle_json_path is not None:
             shutil.copy(kaggle_json_path, default_path)
@@ -153,7 +154,6 @@ def download_kaggle_resource(resource, download_path="dataset", kaggle_json_path
         api.competition_download_files(competition_path, path=resource_download_path)
 
     print(f"Resource downloaded to: {resource_download_path}")
-
 
 
 if __name__ == "__main__":
