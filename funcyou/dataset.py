@@ -5,7 +5,6 @@ import os
 import shutil
 import re
 import json
-from kaggle.api.kaggle_api_extended import KaggleApi
 import shutil
 
 # make data splitstr
@@ -112,6 +111,8 @@ def download_kaggle_resource(resource, download_path="dataset", kaggle_json_path
     # Load the Kaggle API key from kaggle.json
     with open(kaggle_json_path) as f:
         kaggle_credentials = json.load(f)
+    
+    from kaggle.api.kaggle_api_extended import KaggleApi
 
     # Configure the Kaggle API
     api = KaggleApi()
