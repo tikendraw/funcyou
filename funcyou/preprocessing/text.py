@@ -4,6 +4,7 @@ from typing import  Callable, Generator, List
 from collections import Counter
 from functools import cache
 
+__all__ = ['contracations_dict', 'text_cleaning', 'IntegerVectorizer', 'Vocabulary', 'fix_contractions']
 # with open('contractions.json') as f:
 #    contractions_dict = json.load(f)
 
@@ -143,7 +144,7 @@ def text_cleaning_apos(text):
 
 
 # FUNCTIONS TO EXPAND CONTRACTIONS
-def cont_to_exp(x):
+def fix_contractions(x):
     x = str(x).lower()
     xsplited = x.split(' ')
     exp_sentence = []
@@ -155,33 +156,30 @@ def cont_to_exp(x):
 
     return ' '.join(exp_sentence)
 
+# Compile regex patterns for better performance
+PUNCTUATION_REGEX = re.compile(r'[^a-zA-Z]')
+SPECIAL_CHARACTERS_REGEX = re.compile(r'[#,@,&]')
+DIGIT_REGEX = re.compile(r'\d+')
+APOSTROPHE_S_REGEX = re.compile(r"'s")
+WWW_REGEX = re.compile(r'w{3}')
+URL_REGEX = re.compile(r'http\S+')
+MULTIPLE_SPACES_REGEX = re.compile(r'\s+')
+SINGLE_CHAR_REGEX = re.compile(r'\s+[a-zA-Z]\s+')
+
 def text_cleaning(text):
     text = str(text)
     text = text.lower()
-    text = re.sub("[^a-zA-Z]", " ", text) # removing punctuation
-    # remove special characters from text column
-    text = re.sub('[#,@,&]', '',text)
-    # Remove digits
-    text = re.sub('\d*','', text)
-    # remove "'s"
-    text = re.sub("'s",'', text)
-    #Remove www
-    text = re.sub('w{3}','', text)
-    # remove urls
-    text = re.sub("http\S+", "", text)
-    # remove multiple spaces with single space
-    text = re.sub('\s+', ' ', text)
-    #remove all single characters
-    text = re.sub(r'\s+[a-zA-Z]\s+', ' ', text)
+    text = PUNCTUATION_REGEX.sub(' ', text)  # Remove punctuation
+    text = SPECIAL_CHARACTERS_REGEX.sub('', text)
+    text = DIGIT_REGEX.sub('', text)
+    text = APOSTROPHE_S_REGEX.sub('', text)
+    text = WWW_REGEX.sub('', text)
+    text = URL_REGEX.sub('', text)
+    text = MULTIPLE_SPACES_REGEX.sub(' ', text)
+    text = SINGLE_CHAR_REGEX.sub(' ', text)
+    
+    return text.strip()
 
-    return text
-
-
-
-def clean_text(x: str) -> str:
-    x = re.sub(r'[^\w\s]', '', x)  # Remove punctuation
-    x = x.lower()  # Convert to lowercase
-    return x    
 
 class Vocabulary:
     
