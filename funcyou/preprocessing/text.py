@@ -1,8 +1,8 @@
-import re
 import json
-from typing import  Callable, Generator, List
+import re
 from collections import Counter
 from functools import cache
+from typing import Callable, Generator, List
 
 __all__ = ['contracations_dict', 'text_cleaning', 'IntegerVectorizer', 'Vocabulary', 'fix_contractions']
 # with open('contractions.json') as f:
