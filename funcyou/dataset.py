@@ -101,7 +101,7 @@ def download_kaggle_resource(resource, download_path="dataset", kaggle_json_path
     # Find the path to kaggle.json if not provided
     default_path = Path(os.path.expanduser("~/.kaggle/kaggle.json"))
     default_path.parent.mkdir(exist_ok=True)
-    if not os.path.exists(default_path):
+    if not default_path.exists():
         if kaggle_json_path is not None:
             shutil.copy(kaggle_json_path, default_path)
         else:
@@ -109,13 +109,14 @@ def download_kaggle_resource(resource, download_path="dataset", kaggle_json_path
                 "kaggle.json not found in default location and kaggle_json_path not provided."
             )
 
+
     # Load the Kaggle API key from kaggle.json
-    with open(kaggle_json_path) as f:
+    with open(default_path) as f:
         kaggle_credentials = json.load(f)
-    
-    from kaggle.api.kaggle_api_extended import KaggleApi
 
     # Configure the Kaggle API
+    from kaggle.api.kaggle_api_extended import KaggleApi
+
     api = KaggleApi()
     api.authenticate()
 
@@ -140,10 +141,10 @@ def download_kaggle_resource(resource, download_path="dataset", kaggle_json_path
     resource_name = url_parts[-1]
 
     # Define the download path for the resource
-    resource_download_path = os.path.join(download_path, resource_name)
+    resource_download_path = Path(download_path) / resource_name
 
     # Create the directory if it doesn't exist
-    os.makedirs(resource_download_path, exist_ok=True)
+    resource_download_path.mkdir(parents=True, exist_ok=True)
 
     # Download the resource
     if resource_type == "datasets":
