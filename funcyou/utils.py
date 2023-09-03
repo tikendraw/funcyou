@@ -1,17 +1,17 @@
-import os
-import tarfile
-import sklearn
-import warnings
-import pandas as pd
-import mimetypes
-from pathlib import Path
-import pandas as pd
-import mimetypes
-import sys
-import matplotlib.pyplot as plt
 import io
+import mimetypes
+import os
 import shutil
+import sys
+import tarfile
+import warnings
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import sklearn
+
 
 def variable_memory():
     print('''
@@ -99,8 +99,6 @@ def get_feature_names(column_transformer):
             feature_names.extend(get_names(trans))
 
     return feature_names
-
-
 
 
 def dir_walk(directory, show_hidden_dir=False, exclude=None, include=None):
@@ -233,6 +231,59 @@ def printt(*args, sep=' ', end='\n',terminal_width:int=170, file=sys.stdout, flu
     # Flush the output if specified
     if flush:
         file.flush()
+
+
+import json
+
+import toml
+import yaml
+from yaml import SafeLoader
+from yaml.constructor import ConstructorError
+
+
+class DotDict(dict):
+    def __init__(self, dictionary=None):
+        if dictionary is not None:
+            for key, value in dictionary.items():
+                if isinstance(value, dict):
+                    value = DotDict(value)
+                self[key] = value
+
+
+    def __getattr__(self, key):
+        if key in self:
+            return self[key]
+        else:
+            raise AttributeError(f"'DotDict' object has no attribute '{key}'")
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+
+    def save_json(self, file_path):
+        with open(file_path, 'w') as file:
+            json.dump(self, file, indent=4)
+
+    def save_toml(self, file_path):
+        with open(file_path, 'w') as file:
+            toml.dump(self, file)
+
+    def save_yaml(self, file_path):
+        with open(file_path, 'w') as file:
+            yaml.dump(self, file)
+
+    @classmethod
+    def from_json(cls, file_path):
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+        return cls(data)
+
+    @classmethod
+    def from_toml(cls, file_path):
+        with open(file_path, 'r') as file:
+            data = toml.load(file)
+        return cls(data)
+
 
 
 if __name__ == '__main__':
