@@ -1,9 +1,9 @@
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name='funcyou',
-    version='1.0.5',
+    version='1.0.7',
     author='Tikendra sahu',
     author_email='tikendraksahu1029@gmail.com',
     description='useful function to save time',
