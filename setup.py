@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='funcyou',
-    version='1.0.8',
+    version='1.0.9',
     author='Tikendra sahu',
     author_email='tikendraksahu1029@gmail.com',
     description='useful function to save time',
@@ -13,6 +13,7 @@ setup(
         'scikit-learn',
         'pandas',
         'numpy',
-        'kaggle'
+        'kaggle',
+        'seaborn'
     ],
 )
