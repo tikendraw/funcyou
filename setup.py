@@ -3,10 +3,10 @@ from setuptools import find_packages, setup
 
 setup(
     name='funcyou',
-    version='1.0.9',
+    version='1.1.0',
     author='Tikendra sahu',
     author_email='tikendraksahu1029@gmail.com',
-    description='useful function to save time',
+    description='useful functions to reuse and save time',
     packages=find_packages(),
     install_requires=[
         'matplotlib',
