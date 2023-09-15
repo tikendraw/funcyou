@@ -35,10 +35,18 @@ class Patcher(nn.Module):
         num_patches = num_patches_height * num_patches_width
 
         # Extract patches from the image
-        patches = images.unfold(2, patch_height, patch_height).unfold(3, patch_width, patch_width)
-        patches = patches.contiguous().view(batch_size, channels, -1, patch_height, patch_width)
+        patches = images.unfold(2, patch_height, patch_height).unfold(
+            3, patch_width, patch_width
+        )
+        patches = patches.contiguous().view(
+            batch_size, channels, -1, patch_height, patch_width
+        )
 
         # Transpose the patches to put them in the format (batch_size, num_patches, channels, patch_height, patch_width)
-        patches = patches.permute(0, 2, 3, 4, 1).contiguous().view(batch_size, num_patches, -1)
+        patches = (
+            patches.permute(0, 2, 3, 4, 1)
+            .contiguous()
+            .view(batch_size, num_patches, -1)
+        )
 
         return patches

@@ -14,7 +14,8 @@ import sklearn
 
 
 def variable_memory():
-    print('''
+    print(
+        '''
     def sizeof_fmt(num, suffix="B"):
         """by Fred Cirera,  https://stackoverflow.com/a/1094933/1870254, modified"""
         for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
@@ -125,7 +126,7 @@ def dir_walk(directory, show_hidden_dir=False, exclude=None, include=None):
 
         # Exclude hidden directories
         if not show_hidden_dir:
-            dirs[:] = [d for d in dirs if not d.startswith('.')]
+            dirs[:] = [d for d in dirs if not d.startswith(".")]
 
         # Exclude directories in the exclude list
         if dir_name in exclude:
@@ -138,41 +139,46 @@ def dir_walk(directory, show_hidden_dir=False, exclude=None, include=None):
             continue
 
         file_counts = {
-            'directory': root,
-            'base': dir_name,
-            'folders': len(dirs),
-            'video': 0,
-            'music': 0,
-            'photos': 0,
-            'application/zip': 0,
-            'documents': 0,
-            'others':0,
-            'total files':len(files)
+            "directory": root,
+            "base": dir_name,
+            "folders": len(dirs),
+            "video": 0,
+            "music": 0,
+            "photos": 0,
+            "application/zip": 0,
+            "documents": 0,
+            "others": 0,
+            "total files": len(files),
         }
 
         for file in files:
             file_path = os.path.join(root, file)
             mime_type, _ = mimetypes.guess_type(file_path)
             if mime_type is None:
-                file_counts['others'] += 1
+                file_counts["others"] += 1
 
-            elif mime_type.startswith('video/'):
-                file_counts['video'] += 1
-            elif mime_type.startswith('audio/'):
-                file_counts['music'] += 1
-            elif mime_type.startswith('image/'):
-                file_counts['photos'] += 1
-            elif mime_type == 'application/zip':
-                file_counts['application/zip'] += 1
-            elif mime_type.startswith('text/') or mime_type.endswith('msword') or mime_type.endswith('pdf'):
-                file_counts['documents'] += 1
+            elif mime_type.startswith("video/"):
+                file_counts["video"] += 1
+            elif mime_type.startswith("audio/"):
+                file_counts["music"] += 1
+            elif mime_type.startswith("image/"):
+                file_counts["photos"] += 1
+            elif mime_type == "application/zip":
+                file_counts["application/zip"] += 1
+            elif (
+                mime_type.startswith("text/")
+                or mime_type.endswith("msword")
+                or mime_type.endswith("pdf")
+            ):
+                file_counts["documents"] += 1
         final.append(file_counts)
 
     return pd.DataFrame(final)
 
 
-def printt(*args, sep=' ', end='\n',terminal_width:int=170, file=sys.stdout, flush=False):
-    
+def printt(
+    *args, sep=" ", end="\n", terminal_width: int = 170, file=sys.stdout, flush=False
+):
     if terminal_width is None:
         terminal_width = shutil.get_terminal_size().columns
 
@@ -185,8 +191,7 @@ def printt(*args, sep=' ', end='\n',terminal_width:int=170, file=sys.stdout, flu
 
     # Determine the number of lines needed for each argument
     max_lines = max(
-        max(str(arg).count('\n') + 1 for arg in args),
-        1 if has_plots else 0
+        max(str(arg).count("\n") + 1 for arg in args), 1 if has_plots else 0
     )
 
     # Loop through each line
@@ -200,7 +205,7 @@ def printt(*args, sep=' ', end='\n',terminal_width:int=170, file=sys.stdout, flu
             if isinstance(arg, plt.Figure):
                 plt.figure(arg.number)
                 plt.imshow(arg)
-                plt.axis('off')
+                plt.axis("off")
                 plt.show()
                 continue
 
@@ -249,7 +254,6 @@ class DotDict(dict):
                     value = DotDict(value)
                 self[key] = value
 
-
     def __getattr__(self, key):
         if key in self:
             return self[key]
@@ -259,35 +263,33 @@ class DotDict(dict):
     def __setattr__(self, key, value):
         self[key] = value
 
-
     def save_json(self, file_path):
-        with open(file_path, 'w') as file:
+        with open(file_path, "w") as file:
             json.dump(self, file, indent=4)
 
     def save_toml(self, file_path):
-        with open(file_path, 'w') as file:
+        with open(file_path, "w") as file:
             toml.dump(self, file)
 
     def save_yaml(self, file_path):
-        with open(file_path, 'w') as file:
+        with open(file_path, "w") as file:
             yaml.dump(self, file)
 
     @classmethod
     def from_json(cls, file_path):
-        with open(file_path, 'r') as file:
+        with open(file_path, "r") as file:
             data = json.load(file)
         return cls(data)
 
     @classmethod
     def from_toml(cls, file_path):
-        with open(file_path, 'r') as file:
+        with open(file_path, "r") as file:
             data = toml.load(file)
         return cls(data)
 
 
-
-if __name__ == '__main__':
-    print('main')
+if __name__ == "__main__":
+    print("main")
 
 
 def main():
@@ -295,5 +297,4 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()

@@ -38,10 +38,12 @@ def plot_grid_search(clf):
     # Convert the cross validated results in a DataFrame ordered by `rank_test_score` and `mean_fit_time`.
     # As it is frequent to have more than one combination with the same max score,
     # the one with the least mean fit time SHALL appear first.
-    cv_results = pd.DataFrame(clf.cv_results_).sort_values(by=['rank_test_score', 'mean_fit_time'])
+    cv_results = pd.DataFrame(clf.cv_results_).sort_values(
+        by=["rank_test_score", "mean_fit_time"]
+    )
 
     # Get parameters
-    parameters=cv_results['params'][0].keys()
+    parameters = cv_results["params"][0].keys()
 
     # Calculate the number of rows and columns necessary
     rows = -(-len(parameters) // 2)
@@ -54,7 +56,6 @@ def plot_grid_search(clf):
 
     # For each of the parameters
     for parameter in parameters:
-
         # As all the graphs have the same traces, and by default all traces are shown in the legend,
         # the description appears multiple times. Then, only show legend of the first graph.
         if row == 1 and column == 1:
@@ -63,51 +64,69 @@ def plot_grid_search(clf):
             show_legend = False
 
         # Mean test score
-        mean_test_score = cv_results[cv_results['rank_test_score'] != 1]
-        fig.add_trace(go.Scatter(
-            name='Mean test score',
-            x=mean_test_score['param_' + parameter],
-            y=mean_test_score['mean_test_score'],
-            mode='markers',
-            marker=dict(size=mean_test_score['mean_fit_time'],
-                        color='SteelBlue',
-                        sizeref=2. * cv_results['mean_fit_time'].max() / (40. ** 2),
-                        sizemin=4,
-                        sizemode='area'),
-            text=mean_test_score['params'].apply(
-                lambda x: pprint.pformat(x, width=-1).replace('{', '').replace('}', '').replace('\n', '<br />')),
-            showlegend=show_legend),
+        mean_test_score = cv_results[cv_results["rank_test_score"] != 1]
+        fig.add_trace(
+            go.Scatter(
+                name="Mean test score",
+                x=mean_test_score["param_" + parameter],
+                y=mean_test_score["mean_test_score"],
+                mode="markers",
+                marker=dict(
+                    size=mean_test_score["mean_fit_time"],
+                    color="SteelBlue",
+                    sizeref=2.0 * cv_results["mean_fit_time"].max() / (40.0**2),
+                    sizemin=4,
+                    sizemode="area",
+                ),
+                text=mean_test_score["params"].apply(
+                    lambda x: pprint.pformat(x, width=-1)
+                    .replace("{", "")
+                    .replace("}", "")
+                    .replace("\n", "<br />")
+                ),
+                showlegend=show_legend,
+            ),
             row=row,
-            col=column)
+            col=column,
+        )
 
         # Best estimators
-        rank_1 = cv_results[cv_results['rank_test_score'] == 1]
-        fig.add_trace(go.Scatter(
-            name='Best estimators',
-            x=rank_1['param_' + parameter],
-            y=rank_1['mean_test_score'],
-            mode='markers',
-            marker=dict(size=rank_1['mean_fit_time'],
-                        color='Crimson',
-                        sizeref=2. * cv_results['mean_fit_time'].max() / (40. ** 2),
-                        sizemin=4,
-                        sizemode='area'),
-            text=rank_1['params'].apply(str),
-            showlegend=show_legend),
+        rank_1 = cv_results[cv_results["rank_test_score"] == 1]
+        fig.add_trace(
+            go.Scatter(
+                name="Best estimators",
+                x=rank_1["param_" + parameter],
+                y=rank_1["mean_test_score"],
+                mode="markers",
+                marker=dict(
+                    size=rank_1["mean_fit_time"],
+                    color="Crimson",
+                    sizeref=2.0 * cv_results["mean_fit_time"].max() / (40.0**2),
+                    sizemin=4,
+                    sizemode="area",
+                ),
+                text=rank_1["params"].apply(str),
+                showlegend=show_legend,
+            ),
             row=row,
-            col=column)
+            col=column,
+        )
 
         fig.update_xaxes(title_text=parameter, row=row, col=column)
-        fig.update_yaxes(title_text='Score', row=row, col=column)
+        fig.update_yaxes(title_text="Score", row=row, col=column)
 
         # Check the linearity of the series
         # Only for numeric series
-        if pd.to_numeric(cv_results['param_' + parameter], errors='coerce').notnull().all():
-            x_values = cv_results['param_' + parameter].sort_values().unique().tolist()
+        if (
+            pd.to_numeric(cv_results["param_" + parameter], errors="coerce")
+            .notnull()
+            .all()
+        ):
+            x_values = cv_results["param_" + parameter].sort_values().unique().tolist()
             r = stats.linregress(x_values, range(0, len(x_values))).rvalue
             # If not so linear, then represent the data as logarithmic
             if r < 0.86:
-                fig.update_xaxes(type='log', row=row, col=column)
+                fig.update_xaxes(type="log", row=row, col=column)
 
         # Increment the row and column indexes
         column += 1
@@ -116,15 +135,17 @@ def plot_grid_search(clf):
             row += 1
 
             # Show first the best estimators
-    fig.update_layout(legend=dict(traceorder='reversed'),
-                      width=columns * 360 + 100,
-                      height=rows * 360,
-                      title='Best score: {:.6f} with {}'.format(cv_results['mean_test_score'].iloc[0],
-                                                                str(cv_results['params'].iloc[0]).replace('{',
-                                                                                                          '').replace(
-                                                                    '}', '')),
-                      hovermode='closest',
-                      template='none')
+    fig.update_layout(
+        legend=dict(traceorder="reversed"),
+        width=columns * 360 + 100,
+        height=rows * 360,
+        title="Best score: {:.6f} with {}".format(
+            cv_results["mean_test_score"].iloc[0],
+            str(cv_results["params"].iloc[0]).replace("{", "").replace("}", ""),
+        ),
+        hovermode="closest",
+        template="none",
+    )
     fig.show()
 
 
@@ -152,7 +173,9 @@ def table_grid_search(clf, all_columns=False, all_ranks=False, save=True):
     # Convert the cross validated results in a DataFrame ordered by `rank_test_score` and `mean_fit_time`.
     # As it is frequent to have more than one combination with the same max score,
     # the one with the least mean fit time SHALL appear first.
-    cv_results = pd.DataFrame(clf.cv_results_).sort_values(by=['rank_test_score', 'mean_fit_time'])
+    cv_results = pd.DataFrame(clf.cv_results_).sort_values(
+        by=["rank_test_score", "mean_fit_time"]
+    )
 
     # Reorder
     columns = cv_results.columns.tolist()
@@ -161,18 +184,26 @@ def table_grid_search(clf, all_columns=False, all_ranks=False, save=True):
     cv_results = cv_results[columns]
 
     if save:
-        cv_results.to_csv('--'.join(cv_results['params'][0].keys()) + '.csv', index=True, index_label='Id')
+        cv_results.to_csv(
+            "--".join(cv_results["params"][0].keys()) + ".csv",
+            index=True,
+            index_label="Id",
+        )
 
     # Unless all_columns are True, drop not wanted columns: params, std_* split*
     if not all_columns:
-        cv_results.drop('params', axis='columns', inplace=True)
-        cv_results.drop(list(cv_results.filter(regex='^std_.*')), axis='columns', inplace=True)
-        cv_results.drop(list(cv_results.filter(regex='^split.*')), axis='columns', inplace=True)
+        cv_results.drop("params", axis="columns", inplace=True)
+        cv_results.drop(
+            list(cv_results.filter(regex="^std_.*")), axis="columns", inplace=True
+        )
+        cv_results.drop(
+            list(cv_results.filter(regex="^split.*")), axis="columns", inplace=True
+        )
 
     # Unless all_ranks are True, filter out those rows which have rank equal to one
     if not all_ranks:
-        cv_results = cv_results[cv_results['rank_test_score'] == 1]
-        cv_results.drop('rank_test_score', axis = 'columns', inplace = True)        
+        cv_results = cv_results[cv_results["rank_test_score"] == 1]
+        cv_results.drop("rank_test_score", axis="columns", inplace=True)
         cv_results = cv_results.style.hide_index()
 
     display(cv_results)

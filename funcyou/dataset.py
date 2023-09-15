@@ -1,4 +1,3 @@
-
 import json
 import os
 import random
@@ -88,6 +87,7 @@ def make_data_split(
     except Exception as e:
         print("Exception Occured: ", e)
 
+
 def download_kaggle_resource(resource, download_path="dataset", kaggle_json_path=None):
     """
     Downloads a Kaggle dataset or competition using the Kaggle API key stored in kaggle.json.
@@ -108,7 +108,6 @@ def download_kaggle_resource(resource, download_path="dataset", kaggle_json_path
             raise ValueError(
                 "kaggle.json not found in default location and kaggle_json_path not provided."
             )
-
 
     # Load the Kaggle API key from kaggle.json
     with open(default_path) as f:
@@ -158,4 +157,4 @@ def download_kaggle_resource(resource, download_path="dataset", kaggle_json_path
 
 
 if __name__ == "__main__":
-    print('hello world')
+    print("hello world")
