@@ -1,8 +1,10 @@
 import json
 import re
 from collections import Counter
-from functools import cache
-from typing import Callable, Generator, List
+from functools import cache, partial
+from typing import Callable, Generator, List, Union
+
+import pandas as pd
 
 __all__ = ['contracations_dict', 'text_cleaning', 'IntegerVectorizer', 'Vocabulary', 'fix_contractions']
 # with open('contractions.json') as f:
@@ -181,56 +183,51 @@ def text_cleaning(text):
     return text.strip()
 
 
+from collections import Counter
+
+
 class Vocabulary:
-    
-    """
-    Class for storing a vocabulary of words and their corresponding indices.
+    def __init__(self, special_tokens: list[str, bytes] = None):
+        """
+        Initialize a Vocabulary object.
 
-    Args:
-        special_tokens: A list of special tokens to add to the vocabulary .
-        Note: special_tokens will not be processed by preprocessing function.
+        Args:
+            special_tokens (list of str or bytes, optional): A list of special tokens to include in the vocabulary.
+        """
+        self.word_to_idx = {}  # Mapping from words to indices
+        self.idx_to_word = {}  # Mapping from indices to words
+        self.counter = Counter()  # Counts the frequency of each word
 
-    Attributes:
-        word_to_idx: A dictionary mapping words to their indices.
-        idx_to_word: A dictionary mapping indices to their words.
-        counter: A counter of the number of times each word appears in the data.
-        UNK_TOKEN: The token for unknown words.
-        UNK: The index of the UNK_TOKEN.
-        PAD_TOKEN: The token for padding.
-        PAD: The index of the PAD_TOKEN.
-        vocab_size: The size of the vocabulary.
+        self.vocab_size = 0  # Total number of unique words in the vocabulary
+        self.special_tokens = special_tokens  # List of special tokens to be added
+        self.add_special_tokens(special_tokens)
 
-    Methods:
-        build_vocab: Build the vocabulary from a dataset of text.
-        add_word_to_vocab: Add a word to the vocabulary.
-        __len__: Get the length of the vocabulary.
-    """
-    
-    def __init__(self, special_tokens: list[str]):
-        self.word_to_idx = {}
-        self.idx_to_word = {}
-        self.counter = Counter()
-        
-        self.UNK_TOKEN = '<UNK>'
-        self.UNK = 1
-        self.PAD_TOKEN = '<PAD>'
-        self.PAD = 0
-        
-        self.word_to_idx[self.UNK_TOKEN] = self.UNK
-        self.idx_to_word[self.UNK] = self.UNK_TOKEN
+    def add_special_tokens(self, special_tokens):
+        """
+        Add special tokens to the vocabulary.
 
-        self.word_to_idx[self.PAD_TOKEN] = self.PAD
-        self.idx_to_word[self.PAD] = self.PAD_TOKEN
+        Args:
+            special_tokens (list of str or bytes): A list of special tokens to add to the vocabulary.
+        """
+        if special_tokens is not None:
+            for word in special_tokens:
+                self.add_word_to_vocab(word)
 
-        self.vocab_size = 2
-        for idx, token in enumerate(special_tokens, start=2):
-            self.word_to_idx[token] = idx
-            self.idx_to_word[idx] = token
-            self.vocab_size += 1
+    def build_vocab(self, tokenized_data, max_tokens, min_freq, reset=False):
+        """
+        Build the vocabulary from tokenized data.
 
-    def build_vocab(self, tokenized_data, max_tokens, min_freq):
-        # sourcery skip: dict-assign-update-to-union
-        self.counter = Counter()
+        Args:
+            tokenized_data (list of lists): Tokenized input data.
+            max_tokens (int or None): Maximum number of tokens to include in the vocabulary. None for unlimited.
+            min_freq (int): Minimum frequency required for a word to be included in the vocabulary.
+            reset (bool, optional): Whether to reset the vocabulary before building it.
+
+        """
+        if reset:
+            self.reset()
+            self.add_special_tokens(self.special_tokens)
+
         for words in tokenized_data:
             self.counter.update(words)
 
@@ -248,101 +245,229 @@ class Vocabulary:
                     self.add_word_to_vocab(word)
 
     def add_word_to_vocab(self, word):
+        """
+        Add a word to the vocabulary.
+
+        Args:
+            word (str or bytes): The word to add to the vocabulary.
+        """
         self.word_to_idx[word] = self.vocab_size
         self.idx_to_word[self.vocab_size] = word
         self.vocab_size += 1
 
+    def add_to_dictionary(self, vocabulary):
+        """
+        Add words from another vocabulary to this vocabulary.
+
+        Args:
+            vocabulary (Vocabulary): Another Vocabulary object.
+        """
+        for word in vocabulary:
+            if word not in self.word_to_idx:
+                self.add_word_to_vocab(word)
+
+    def reset(self):
+        """
+        Reset the vocabulary, clearing all word and index mappings.
+        """
+        self.word_to_idx = {}
+        self.idx_to_word = {}
+        self.counter = Counter()
+        self.vocab_size = 0
+
+    def __call__(self, word):
+        """
+        Get the index of a word in the vocabulary.
+
+        Args:
+            word (str or bytes): The word to look up.
+
+        Returns:
+            int: The index of the word in the vocabulary.
+        """
+        return self.word_to_idx[word]
+
     def __len__(self):
+        """
+        Get the size of the vocabulary (number of unique words).
+
+        Returns:
+            int: The size of the vocabulary.
+        """
         return self.vocab_size
-    
+
 
 class IntegerVectorizer:
-    """
-    Class for converting text data to integer vectors.
-
-    Args:
-        - tokenizer: A function that takes a string and returns a list of tokens. (default=None)
-        - preprocessing_func: A function that takes a token and returns a processed token. (default=None)
-        - max_tokens: The maximum number of tokens to keep in the vocabulary. (default=None)
-        - min_freq: The minimum frequency of a token to keep in the vocabulary. (default=1)
-        - special_tokens: A list of special tokens to add to the vocabulary. (default=None)
-        - max_seq_length: The maximum sequence length for each input. (default=None)
-        - pad_to_max: Whether to pad sequences to the maximum length. (default=False)
-
-    Attributes:
-        vocab: The vocabulary used to convert text to integers.
-        tokenized_data: The tokenized data used to build the vocabulary.
-
-    Methods:
-        - adapt: Adapt the vectorizer to a dataset of text.
-        - __call__: Convert text data to integer vectors.
-        - preprocess_sentence: Preprocess a sentence for tokenization.
-        - tokenize_data_generator: Tokenize a dataset of text and yield the tokens.
-        - transform: Convert a dataset of text to integer vectors.
-        - adjust_sequence_length: Adjust the length of a sequence to the maximum length.
-        - reverse_transform: Convert integer vectors to text.
-        - transform_generator: Convert a dataset of text to integer vectors in a generator.
-        - reverse_transform_generator: Convert integer vectors to text in a generator.
-    """
-    
     def __init__(self, 
-                 tokenizer: Callable[[str], list[str]] = None,
+                 tokenizer: Callable[[str], List[str]] = None,
                  preprocessing_func: Callable[[str], str] = None,
                  max_tokens=None,
                  min_freq=1,
-                 special_tokens: list[str] = None,
+                 special_tokens: List[str] = None,
                  max_seq_length=None,
-                 pad_to_max=False):
-        
+                 pad_to_max=False,
+                 splitter=' ',  # Not required if tokenizer is passed
+                 vocabulary: set = None,
+                 encoding='utf-8'
+                ):
+        """
+        Initialize an IntegerVectorizer object.
+
+        Args:
+            tokenizer (Callable[[str], List[str]], optional): A function for tokenizing input data.
+            preprocessing_func (Callable[[str], str], optional): A function for preprocessing input data.
+            max_tokens (int, optional): Maximum number of tokens to include in the vocabulary. None for unlimited.
+            min_freq (int, optional): Minimum frequency required for a word to be included in the vocabulary.
+            special_tokens (list of str, optional): A list of special tokens to include in the vocabulary.
+            max_seq_length (int, optional): Maximum sequence length for data padding or truncation.
+            pad_to_max (bool, optional): Whether to pad sequences to the maximum sequence length.
+            splitter (str, optional): A string used for splitting sentences into words (not required if tokenizer is passed).
+            vocabulary (set, optional): A set of words to initialize the vocabulary with.(adapt is not required if passed)
+            encoding (str, optional): The character encoding to use for text processing.
+        """
         self.min_freq = min_freq
         self.max_tokens = max_tokens
         self.max_seq_length = max_seq_length
-        self.tokenizer = tokenizer
-        self.preprocessing_func = preprocessing_func
-        self.reserved_tokens = ['<UNK>', '<PAD>']
-        self.special_tokens = [token for token in special_tokens if token not in self.reserved_tokens] if special_tokens else []
-        self.pad_to_max = pad_to_max  # Store the argument
+        self.encoding = encoding
+        print('Encoding: ', self.encoding)
+        
+        self.tokenizer = partial(self.bytes_string_wrapper, tokenizer, encoding=encoding) if tokenizer else None
+        self.preprocessing_func = partial(self.bytes_string_wrapper, preprocessing_func, encoding=encoding) if preprocessing_func else None
+        
+        self.pad_to_max = pad_to_max
+        
+        self.UNK = '<UNK>'.encode(self.encoding)
+        self.PAD = '<PAD>'.encode(self.encoding)
+        self.splitter = splitter.encode(self.encoding)
 
-        self.vocab = Vocabulary(self.special_tokens)
+        self.reserved_tokens = [self.PAD, self.UNK]
+        
+        if special_tokens:
+            self.update_reserved_tokens(special_tokens)
+            self.special_tokens = special_tokens
+                    
+        self.vocab = Vocabulary(self.reserved_tokens)
+        
+        if vocabulary:
+            vocabulary = [token.encode(self.encoding) if isinstance(token, str) else token for token in vocabulary]
+            self.vocab.add_to_dictionary(vocabulary)
+            
         self.tokenized_data = []
 
-    def adapt(self, data):
+        self.UNK_ID = self.vocab(self.UNK)
+        self.PAD_ID = self.vocab(self.PAD)
+    
+    def update_reserved_tokens(self, special_tokens):
+        """
+        Update the reserved tokens with new special tokens.
+
+        Args:
+            special_tokens (list of str): A list of special tokens to add to the reserved tokens.
+        """
+        special_tokens = [token.encode(self.encoding) if isinstance(token, str) else token for token in special_tokens]
+        new_tokens = [token for token in special_tokens if token not in self.reserved_tokens]
+        new_tokens = self.reserved_tokens + new_tokens
+        encoded_tokens = []
+        
+        for i in new_tokens:
+            if isinstance(i, str):
+                encoded_tokens.append(i.encode(self.encoding))
+            elif isinstance(i, bytes):
+                encoded_tokens.append(i)
+                
+        self.reserved_tokens = encoded_tokens
+        print('Reserved tokens: ', self.reserved_tokens)
+        
+    def bytes_string_wrapper(self, func, *args, encoding):
+        """
+        Wrap a function to handle byte-encoded strings.
+
+        Args:
+            func (Callable): The function to wrap.
+            *args: Arguments to pass to the function.
+            encoding (str): The character encoding to use for text processing.
+
+        Returns:
+            bytes or List[bytes]: The result of the wrapped function.
+        """
+        encoded_args = [arg.decode(encoding) if isinstance(arg, bytes) else arg for arg in args]
+        result = func(*encoded_args)
+
+        if isinstance(result, str):
+            result = result.encode(encoding)
+        elif isinstance(result, list) and all(isinstance(item, str) for item in result):
+            result = [item.encode(encoding) for item in result]
+
+        return result
+    
+    def adapt(self, data: List[str], reset: bool = False) -> None:
+        """
+        Build or rebuild the vocabulary based on the provided data.
+
+        Args:
+            data (list of str): The input data to build the vocabulary from.
+            reset (bool, optional): Whether to reset the vocabulary before building it.
+        """
         self.tokenized_data = self.tokenize_data_generator(data)
-        self.vocab.build_vocab(self.tokenized_data, self.max_tokens, self.min_freq)
+        self.vocab.build_vocab(self.tokenized_data, self.max_tokens, self.min_freq, reset=reset)
         print('Vocab size:', len(self.vocab))
 
-    def __call__(self, data, reverse=False, return_generator = True):
-        if reverse:
-            return self.reverse_transform_generator(data) if return_generator else self.reverse_transform(data)
-        else:
-            return self.transform_generator(data) if return_generator else self.transform(data)
+    def __call__(self, data: List[str]):
+        """
+        Transform input data into integer sequences using the vocabulary.
+
+        Args:
+            data (list of str): The input data to transform.
+
+        Returns:
+            list of list of int: The transformed integer sequences.
+        """
+        return self.transform(data)
 
     def preprocess_sentence(self, sentence):
-        if self.preprocessing_func:
+        """
+        Preprocess a sentence by applying a preprocessing function.
+
+        Args:
+            sentence (str or bytes): The input sentence to preprocess.
+
+        Returns:
+            bytes: The preprocessed sentence.
+        """
+        if isinstance(sentence, str):
+            sentence = sentence.encode(self.encoding)
+
+        if not self.preprocessing_func:
+            return sentence
+        else:
             words = sentence.split()
             preprocessed_words = [self.preprocessing_func(word) if word not in self.special_tokens else word for word in words]
-            return " ".join(preprocessed_words)
-        return sentence
+            return b" ".join(preprocessed_words)
 
     def tokenize_data_generator(self, data):
+        """
+        Tokenize a generator of sentences.
+
+        Args:
+            data (generator): A generator yielding input sentences.
+
+        Yields:
+            list of str: Tokenized sentences.
+        """
         for sentence in data:
             sentence = self.preprocess_sentence(sentence)
-            yield self.tokenizer(sentence) if self.tokenizer else str(sentence).split()
-
-    def transform(self, data:List[str]):
-        
-        if not isinstance(data, list):
-            raise TypeError("Input data must be a list")
-        
-        self.tokenized_data = self.tokenize_data_generator(data)
-        vectorized_data = []
-        for sentence in self.tokenized_data:
-            vectorized_sentence = [self.vocab.word_to_idx.get(word, self.vocab.UNK) for word in sentence]
-            vectorized_sentence = self.adjust_sequence_length(vectorized_sentence)
-            vectorized_data.append(vectorized_sentence)
-        return vectorized_data
+            yield self.tokenizer(sentence) if self.tokenizer else sentence.split(self.splitter)
 
     def adjust_sequence_length(self, sequence: Generator[int, None, None]) -> list[int]:
+        """
+        Adjust the length of a sequence by padding or truncating.
+
+        Args:
+            sequence (Generator[int, None, None]): A generator yielding integers.
+
+        Returns:
+            list of int: The adjusted sequence.
+        """
         if self.max_seq_length is not None:
             
             if isinstance(sequence, Generator):                
@@ -350,35 +475,89 @@ class IntegerVectorizer:
                 
             if len(sequence) < self.max_seq_length:
                 if self.pad_to_max:
-                    sequence += [self.vocab.PAD] * (self.max_seq_length - len(sequence))
+                    sequence += [self.PAD_ID] * (self.max_seq_length - len(sequence))
             elif len(sequence) > self.max_seq_length:
                 sequence = sequence[:self.max_seq_length]
             return sequence
-
-    def reverse_transform(self, vectorized_data: list[list[int]]) -> list[str]:
-        original_data = []
-        for vector in vectorized_data:
-            sentence = [self.vocab.idx_to_word[idx] for idx in vector if idx != self.vocab.PAD]
-            original_data.append(" ".join(sentence).strip())
-        return original_data
-
-
-    def transform_generator(self, data: list[str]) -> Generator[list[int], None, None]:
         
-        
+    def transform(self, data: List[str]):
+        """
+        Transform input data into integer sequences using the vocabulary.
+
+        Args:
+            data (list of str): The input data to transform.
+
+        Returns:
+            list of list of int: The transformed integer sequences.
+        """
         if not isinstance(data, list):
             raise TypeError("Input data must be a list")
         
         self.tokenized_data = self.tokenize_data_generator(data)
+        vectorized_data = []
         for sentence in self.tokenized_data:
-            vectorized_sentence = (self.vocab.word_to_idx.get(word, self.vocab.UNK) for word in sentence)
+            vectorized_sentence = [self.vocab.word_to_idx.get(word, self.UNK_ID) for word in sentence]
+            vectorized_sentence = self.adjust_sequence_length(vectorized_sentence)
+            vectorized_data.append(vectorized_sentence)
+        return vectorized_data
+
+    def reverse_transform(self, vectorized_data: list[list[int]]) -> list[str]:
+        """
+        Reverse transform integer sequences into original text.
+
+        Args:
+            vectorized_data (list of list of int): The integer sequences to reverse transform.
+
+        Returns:
+            list of str: The original text sentences.
+        """
+        original_data = []
+        for vector in vectorized_data:
+            sentence = [self.vocab.idx_to_word[idx] for idx in vector if idx != self.PAD_ID]
+            original_data.append(b' '.join(sentence).strip())
+        return original_data
+
+    def transform_generator(self, data: list[str]) -> Generator[list[int], None, None]:
+        """
+        Transform input data into integer sequences using the vocabulary, yielding sequences one at a time.
+
+        Args:
+            data (list of str): The input data to transform.
+
+        Yields:
+            list of int: The transformed integer sequences.
+        """
+        if not isinstance(data, list):
+            raise TypeError("Input data must be a list of string(s)")
+        
+        self.tokenized_data = self.tokenize_data_generator(data)
+        for sentence in self.tokenized_data:
+            vectorized_sentence = (self.vocab.word_to_idx.get(word, self.UNK_ID) for word in sentence)
             vectorized_sentence = self.adjust_sequence_length(vectorized_sentence)
             yield list(vectorized_sentence)  # Convert the generator to a list for yielding
 
     def reverse_transform_generator(self, vectorized_data: list[list[int]]) -> Generator[str, None, None]:
+        """
+        Reverse transform integer sequences into original text, yielding original text sentences one at a time.
+
+        Args:
+            vectorized_data (list of list of int): The integer sequences to reverse transform.
+
+        Yields:
+            str: The original text sentences.
+        """
         for vector in vectorized_data:
-            sentence = (self.vocab.idx_to_word[idx] for idx in vector if idx != self.vocab.PAD)
-            yield " ".join(sentence).strip()
+            sentence = (self.vocab.idx_to_word[idx] for idx in vector if idx != self.PAD_ID)
+            yield b" ".join(sentence).strip()
+    
+    def __len__(self):
+        """
+        Get the size of the vocabulary (number of unique words).
+
+        Returns:
+            int: The size of the vocabulary.
+        """
+        return len(self.vocab)
 
 
 def main():
