@@ -148,8 +148,8 @@ contractions_dict = {
 def text_cleaning_apos(text):
     text = str(text)
     text = text.lower()
-    text = re.sub("’", "'", text)  # removing punctuation
-    return text
+    return re.sub("’", "'", text)  # removing punctuation
+    
 
 
 # FUNCTIONS TO EXPAND CONTRACTIONS
