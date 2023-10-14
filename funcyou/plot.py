@@ -1,17 +1,24 @@
-import os, random, shutil
+import os, random
 from pathlib import Path
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import seaborn as sns
 import pandas as pd
-from PIL import Image
 import numpy as np
 import matplotlib.image as mpimg
-
-
-from sklearn.metrics import confusion_matrix
+import os
+import random
 import itertools
 
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import plotly.express as px
+
+from sklearn.metrics import silhouette_samples, silhouette_score, confusion_matrix
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.manifold import TSNE
+import itertools
 
 def plot_random_dataset(
     main_path, row: int = 2, col: int = 5, figsize: tuple = (15, 6), recursive=True
@@ -62,47 +69,6 @@ def plot_random_dataset(
     plt.show()
 
 
-# function to plot an image and details
-def plot_image_with_details(image_path):
-    print(image_path)
-    plt.subplot(1, 2, 1)
-    image_ = Image.open(image_path)
-    plt.imshow(image_)
-    plt.title(f"pillow image {image_.size}")
-
-    plt.subplot(1, 2, 2)
-    plt_image = mpimg.imread(image_path)
-    plt.imshow(plt_image)
-    plt.title(f"matplotlib image {plt_image.shape}")
-
-    print("Image size: ", image_.size)
-    print("Image mode: ", image_.mode)
-    print("Height", image_.height)
-    print("width", image_.width)
-    # image as numpy array
-    image_array = np.asarray(image_)
-    print("Shape of Image as per numpy", image_array.shape)
-
-
-def pairplot(df, figsize=(20, 20), hue: str = None):
-    num_cols = df.select_dtypes("number").columns
-    print(num_cols)
-
-    total_cols = len(num_cols)
-    plot_num = 1
-
-    plt.figure(figsize=(20, 20))
-    for col in num_cols:
-        for col2 in num_cols:
-            plt.subplot(total_cols, total_cols, plot_num)
-            plot_num += 1
-
-            if col == col2:
-                sns.histplot(x=df[col], hue=df[hue])
-
-            else:
-                sns.scatterplot(x=df[col], y=df[col2], hue=df[hue])
-
 
 def make_confusion_matrix(
     y_true,
@@ -113,7 +79,8 @@ def make_confusion_matrix(
     norm=False,
     savefig=False,
 ):
-    """Makes a labelled confusion matrix comparing predictions and ground truth labels.
+    """
+    Makes a labelled confusion matrix comparing predictions and ground truth labels.
     If classes is passed, confusion matrix will be labelled, if not, integer class values
     will be used.
     Args:
@@ -323,62 +290,249 @@ def compare_histories(
         print("Error Occured: ", e)
 
 
-def distplot_axis(
-    x: np.array,
-    axis: list = list(range(95, 100)),
-    percent: int = 99,
-    where_text: int = 5000,
-    xlim: list = None,
-    ylim: list = None,
-    **kwargs,
-):
-    # plt.figure(figsize = (15,7))
-    plt.grid()
 
-    plt.hist(x, bins=50, **kwargs)
-    # Title Word Count distribution
-    try:
-        plt.xlim(xlim[0], xlim[1])
-        plt.ylim(ylim[0], ylim[1])
-    except:
-        pass
+def plot_silhouette(x, cluster_labels, name=' ', ax=None, **kwargs):
+    """
+    Plots the silhouette scores for each cluster in a clustering result. The function visualizes the silhouette coefficients and cluster labels.
 
-    plt.xlabel("word length")
-    plt.ylabel("Count")
-    for i in axis:
-        plt.axvline(x=np.percentile(x, i), color="b", label="axvline - full height")
-        # random_pixel =
-        try:
-            plt.text(np.percentile(x, i), where_text, f"{i} percent", rotation=90)
-        except:
-            pass
+    Args:
+        x (array-like): The data points.
+        cluster_labels (array-like): The cluster labels for each data point.
+        name (str): The name of the clustering result.
 
-    plt.title(
-        f"Text Word Count distribution: {np.percentile(x, percent)} words cover {percent}% of text data"
+        ax (matplotlib Axes, optional): The axes to plot the silhouette. If not provided, a new figure and axes will be created.
+        **kwargs: Additional keyword arguments to be passed to the `fill_betweenx` function.
+
+    Returns:
+        ax (matplotlib Axes): The axes containing the silhouette plot.
+
+    Raises:
+        None
+
+    Example:
+        ```
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        cluster_labels = np.array([0, 1, 0, 1, 2])
+        x = np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
+
+        fig, ax = plt.subplots()
+        plot_silhouette("Clustering Result", cluster_labels, x, ax=ax)
+
+        plt.show()
+        ```
+    """
+
+
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    n_clusters = np.unique(cluster_labels).size
+    
+    silhouette_avg = silhouette_score(x, cluster_labels)    
+    ax.set_title(f"{name} - Silhouette Score: {silhouette_avg:.2f}")
+
+    sample_silhouette_values = silhouette_samples(x, cluster_labels)
+
+    y_lower = 10
+    for i in range(cluster_labels.max() + 1):
+        ith_cluster_silhouette_values = sample_silhouette_values[cluster_labels == i]
+        ith_cluster_silhouette_values.sort()
+
+        size_cluster_i = ith_cluster_silhouette_values.shape[0]
+        y_upper = y_lower + size_cluster_i
+
+        color = plt.cm.Spectral(float(i) / cluster_labels.max())
+        ax.fill_betweenx(np.arange(y_lower, y_upper), 0, ith_cluster_silhouette_values, facecolor=color, edgecolor=color, alpha=0.7, **kwargs)
+        ax.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
+        y_lower = y_upper + 10
+
+    ax.set_xlabel("Silhouette Coefficient Values")
+    ax.set_ylabel("Cluster label")
+    ax.set_title(f"{name}: Clusters({n_clusters}) Silhouette Score({silhouette_avg:.2f})")
+    # The vertical line for the average silhouette score of all the values
+    ax.axvline(x=silhouette_avg, color="red", linestyle="--")
+    ax.set_xlim(-0.2, 1)
+
+    return ax
+
+def get_cluster_centers(X, cluster_labels, n_clusters):
+    centers = np.zeros((n_clusters, X.shape[1]))
+    for i in range(n_clusters):
+        centers[i] = np.mean(X[cluster_labels == i], axis=0)
+    return centers
+
+
+def plot_scatter_2d(x, cluster_labels, ax=None, random_state=42, **kwargs):
+    """
+    Plots a 2D scatter plot of data points with cluster labels. The function visualizes the data points and highlights the cluster centers.
+
+    Args:
+        x (array-like): The data points.
+        cluster_labels (array-like): The cluster labels for each data point.
+        ax (matplotlib Axes, optional): The axes to plot the scatter plot. If not provided, a new figure and axes will be created.
+        random_state (int, optional): The random seed for reproducibility. Defaults to 42.
+        **kwargs: Additional keyword arguments to be passed to the `scatter` function.
+
+    Returns:
+        ax (matplotlib Axes): The axes containing the scatter plot.
+
+    Raises:
+        None
+
+    Example:
+        ```
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        x = np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
+        cluster_labels = np.array([0, 1, 0, 1, 2])
+
+        fig, ax = plt.subplots()
+        plot_scatter_2d(x, cluster_labels, ax=ax, c='red', marker='o')
+
+        plt.show()
+        ```
+    """
+    n_clusters = len(np.unique(cluster_labels))
+        
+    if x.shape[-1] < 2:
+        x = PolynomialFeatures(3).fit_transform(x)
+
+    if x.shape[-1] != 2:
+        x = TSNE(n_components=2, random_state=random_state).fit_transform(x)
+        
+    if ax is None:
+        fig, ax = plt.subplots()
+        
+    if 'c' not in kwargs:
+        kwargs['c'] = cm.nipy_spectral(cluster_labels.astype(float) / n_clusters)
+
+    ax.scatter(x[:, 0], x[:, 1], **kwargs)
+    
+    centers = get_cluster_centers(x, cluster_labels, n_clusters)
+    ax.scatter(
+        centers[:, 0],
+        centers[:, 1],
+        marker="o",
+        c="white",
+        alpha=1,
+        s=200,
+        edgecolor="k",
     )
 
+    for i, c in enumerate(centers,1):
+        ax.scatter(c[0], c[1], marker="$%d$" % i)
 
-def plot_grid(*plots, grid_shape=(2, 2), figsize=(10, 8), **kwargs):
-    num_plots = len(plots)
-    rows, cols = grid_shape
+    return ax
 
-    # Adjust figure size based on grid shape
-    figsize = (figsize[0] * cols, figsize[1] * rows)
 
-    fig, axes = plt.subplots(rows, cols, figsize=figsize, **kwargs)
+def plot_scatter_3d(x, cluster_labels, n_clusters=None, ax=None, random_state=42,**kwargs):
+    """
+    Plots a 3D scatter plot.
 
-    # Iterate over the plots and assign them to the corresponding axis
-    for i, plot in enumerate(plots):
-        ax = axes[i // cols, i % cols]  # Get the corresponding axis
-        ax.plot(plot)  # Plot the data
+    This function takes in data points `x` and their corresponding `cluster_labels` and plots them in a 3D scatter plot. It also plots the cluster centers as white markers.
 
-    # Remove empty subplots if necessary
-    if num_plots < rows * cols:
-        for i in range(num_plots, rows * cols):
-            fig.delaxes(axes[i // cols, i % cols])
+    Args:
+        x (array-like): The data points to be plotted.
+        cluster_labels (array-like): The labels corresponding to each data point.
+        n_clusters (int, optional): The number of clusters. If not provided, it will be inferred from the unique values in `cluster_labels`.
+        ax (Axes3D, optional): The 3D axes to plot on. If not provided, a new figure and axes will be created.
+        random_state (int, optional): The random seed for the t-SNE algorithm.
 
-    plt.tight_layout()  # Adjust spacing between subplots
-    plt.show()
+    Returns:
+        Axes3D: The 3D axes object containing the scatter plot.
+
+    Raises:
+        None
+
+    Examples:
+        ```
+        x = np.random.rand(100, 2)
+        cluster_labels = np.random.randint(0, 3, 100)
+        plot_scatter_3d(x, cluster_labels)
+        ```
+    """
+
+    
+
+    n_clusters = np.unique(cluster_labels).size
+
+    if x.shape[-1] < 3:
+        x = PolynomialFeatures(3).fit_transform(x)
+        
+    if x.shape[-1] != 3:
+        x = TSNE(n_components=3, random_state=random_state).fit_transform(x)
+        
+    if ax is None:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        
+    if 'c' not in kwargs:
+        kwargs['c'] = cm.nipy_spectral(cluster_labels.astype(float) / n_clusters)
+
+    ax.scatter(x[:, 0], x[:, 1], x[:, 2], **kwargs)
+
+    centers = get_cluster_centers(x, cluster_labels, n_clusters)
+    ax.scatter(
+        centers[:, 0],
+        centers[:, 1],
+        centers[:, 2],
+        marker="o",
+        c="white",
+        alpha=1,
+        s=200,
+        edgecolor="k",
+    )
+
+    for i, c in enumerate(centers, 1):
+        ax.scatter(c[0], c[1], c[2], marker="$%d$" % i)
+
+    return ax
+
+
+def plot_scatter(x, y, n_components=2, **kwargs):
+    """
+    Plots a scatter plot of data points.
+
+    This function takes in data points `x` and their corresponding labels `y` and plots them as a scatter plot. The number of dimensions of the plot can be specified using the `n_components` parameter.
+
+    Args:
+        x (array-like): The data points to be plotted.
+        y (array-like): The labels corresponding to each data point.
+        n_components (int, optional): The number of dimensions for the scatter plot. Must be either 2 or 3. Defaults to 2.
+        **kwargs: Additional keyword arguments to customize the scatter plot.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: Raised when `n_components` is not 2 or 3.
+
+    Examples:
+        ```
+        x = np.random.rand(100, 2)
+        y = np.random.randint(0, 3, 100)
+        plot_scatter(x, y, n_components=2, color='red', marker='o')
+        ```
+    """
+    
+    if n_components not in [2, 3]:
+        raise ValueError("n_components must be in [2, 3]")
+        
+    if x.shape[-1] != n_components:
+        x = TSNE(n_components=n_components, random_state=42).fit_transform(x)
+    
+    x = pd.DataFrame(x, columns=["x", "y", "z"] if n_components == 3 else ["x", "y"])
+    x['cluster']=y
+    x['cluster'] = x['cluster'].astype('category')
+    if n_components == 2:
+        fig=px.scatter(data_frame=x, x='x', y='y', color='cluster', symbol='cluster', **kwargs)
+    elif n_components == 3:
+        fig=px.scatter_3d(data_frame=x, x='x', y='y', z='z', color='cluster', symbol='cluster', **kwargs)
+    
+    fig.show()
 
 
 def main():
