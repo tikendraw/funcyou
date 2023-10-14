@@ -29,36 +29,30 @@ models = {
 class ClusterRandomizedSearch:
     def __init__(self, model, param_distributions, n_iter=10, scoring='silhouette_score', random_state=None):
         """
-        Performs a randomized search for hyperparameter optimization in clustering models. The class generates combinations of hyperparameters, fits the models, and evaluates the clustering performance using specified scoring metrics.
+        Initializes an instance of the class with the provided model, parameter distributions, and optional arguments.
+        Sets up the scoring, random state, results, combinations, used combinations, n_iter, and model name attributes.
 
         Args:
-            model: The clustering model to be optimized.
-            param_distributions (dict): A dictionary of hyperparameter distributions.
-            n_iter (int, optional): The number of iterations for the randomized search. Defaults to 10.
-            scoring (str or list, optional): The scoring metric(s) to evaluate the clustering performance. Defaults to 'silhouette_score'.
-            random_state (int or None, optional): The random seed for reproducibility. Defaults to None.
+            model: The model to be used for clustering.
+            param_distributions: A dictionary of parameter distributions for the model.
+            n_iter (optional): The number of iterations for the search. Defaults to 10.
+            scoring (optional): The scoring metric(s) to be used for evaluation. Defaults to 'silhouette_score'.
+            random_state (optional): The random seed for reproducibility.
 
         Returns:
             None
 
         Raises:
-            ValueError: Raised when the `scoring` parameter is not a string or a list of strings.
+            ValueError: If scoring is not a string or a list of strings.
 
         Example:
+            ```python
+            model = MyModel()
+            param_distributions = {'param1': [1, 2, 3], 'param2': [4, 5, 6]}
+            search = Search(model, param_distributions, n_iter=5, scoring='accuracy')
             ```
-            model = KMeans()
-            param_distributions = {'n_clusters': [2, 3, 4], 'max_iter': [100, 200, 300]}
-            search = ClusterRandomizedSearch(model, param_distributions, n_iter=5, scoring='silhouette_score', random_state=42)
-            search.fit(X)
-            results = search.results_()
-            print(results)
-
-            ```
-        Metrics:
-            'Higher Calinski-Harabasz score relates to a model with better-defined clusters.'
-            'Higher Silhouette score relates to a model with better-defined clusters.'
-            'Lower Davies-Bouldin index relates to a model with better separation between the clusters.'
         """
+
         self.model = model
         self.param_distributions = param_distributions
 
@@ -97,12 +91,25 @@ class ClusterRandomizedSearch:
                 all_scores.update(score)
             self.results.append({'params': params, 'name': self.model_name, 'n_clusters':n_clusters, **all_scores})
 
-        best_result = max(self.results,default=np.nan, key=lambda x: x[self.scoring[0]])
-        self.best_params_ = best_result['params']
-        self.best_score_ = best_result[self.scoring[0]]
-        self.best_estimator_ = self.model.set_params(**self.best_params_)
-        self.n_clusters_ = best_result['n_clusters']
+        self.best_result = max(self.results,default=np.nan, key=lambda x: x[self.scoring[0]])
 
+
+    @property
+    def best_params_(self):
+        return self.best_result['params']
+
+    @property
+    def best_scores_(self):
+        return self.best_result[self.scoring[0]]
+
+    @property
+    def best_estimators_(self):
+        return self.model.set_params(**self.best_params_)
+
+    @property
+    def n_clusters_(self):
+        return self.best_result['n_clusters']
+    
     def _get_random_params(self):
         for param in self.combinations:
             yield {key: value for key, value in param.items()}
