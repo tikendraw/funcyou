@@ -157,16 +157,7 @@ def make_confusion_matrix(
     # Save the figure to the current working directory
     if savefig:
         fig.savefig("confusion_matrix.png")
-
-
-def plot_history(
-    history,
-    metrics=["loss", "accuracy"],
-    colors=None,
-    markers=None,
-    linestyles=None,
-    figsize=(15, 4),
-):
+def plot_history(history, metrics=None, colors=None, markers=None, linestyles=None, figsize=(15, 4)):
     """
     Plot training history metrics using Matplotlib.
 
@@ -178,6 +169,8 @@ def plot_history(
         linestyles (list): List of line styles for corresponding metrics.
         figsize (tuple): Figure size (width, height).
     """
+    if metrics is None:
+        metrics = ["loss", "accuracy"]
     if colors is None:
         colors = ["blue", "red", "orange", "green", "purple", "brown", "pink", "gray"]
     if markers is None:
