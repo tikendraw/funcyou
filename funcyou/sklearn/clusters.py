@@ -129,10 +129,6 @@ class ClusterRandomizedSearch:
     def n_clusters_(self):
         return self.best_result["n_clusters"]
 
-    def _get_random_params(self):
-        for param in self.combinations:
-            yield {key: value for key, value in param.items()}
-
     def get_all_combinations(self, parameter_dict):
         parameter_names = list(parameter_dict.keys())
         parameter_values = list(parameter_dict.values())
