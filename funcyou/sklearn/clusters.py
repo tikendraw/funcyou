@@ -55,7 +55,7 @@ class ClusterRandomizedSearch:
             ValueError: If scoring is not a string or a list of strings.
 
         Example:
-            ```python
+            ```
             model = MyModel()
             param_distributions = {'param1': [1, 2, 3], 'param2': [4, 5, 6]}
             search = Search(model, param_distributions, n_iter=5, scoring='accuracy')
@@ -104,7 +104,7 @@ class ClusterRandomizedSearch:
                 {
                     "params": params,
                     "name": self.model_name,
-                    "n_clusters": n_clusters,
+                    "n_clusters": self.n_clusters_,
                     **all_scores,
                 }
             )
@@ -134,10 +134,7 @@ class ClusterRandomizedSearch:
         parameter_values = list(parameter_dict.values())
 
         combinations = list(product(*parameter_values))
-        return [
-            {param_name: value for param_name, value in zip(parameter_names, combo)}
-            for combo in combinations
-        ]
+        return [dict(zip(parameter_names, combo)) for combo in combinations]
 
     def get_scorer(self):
         return {"silhouette_score", "davies_bouldin_score", "calinski_harabasz_score"}
