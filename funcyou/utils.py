@@ -6,11 +6,12 @@ import sys
 import tarfile
 import warnings
 from pathlib import Path
-import yaml
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import sklearn
+import json
+import yaml
 
 
 def variable_memory():
@@ -237,19 +238,6 @@ def printt(
     if flush:
         file.flush()
 
-
-import json
-
-import toml
-import yaml
-from yaml import SafeLoader
-from yaml.constructor import ConstructorError
-
-
-import json
-import toml
-import yaml
-
 class DotDict(dict):
     def __init__(self, dictionary=None):
         if dictionary is not None:
@@ -275,9 +263,16 @@ class DotDict(dict):
             json.dump(self, file, indent=4)
 
     def save_toml(self, file_path: str):
-        with open(file_path, "w") as file:
-            toml.dump(self, file)
+        try:
+            import toml
+            with open(file_path, "w") as file:
+                toml.dump(self, file)
+        except ImportError:
+            raise ImportError("The 'toml' library is not installed. You can install it by running 'pip install toml'")
+        except Exception as e:
+            raise e
 
+    
     def save_yaml(self, file_path: str):
         with open(file_path, "w") as file:
             yaml.dump(self, file)
@@ -294,11 +289,15 @@ class DotDict(dict):
     @classmethod
     def from_toml(cls, file_path: str):
         try:
+            import toml
             with open(file_path, "r") as file:
                 data = toml.load(file)
-            return cls(data)
+            return cls(data)        
+        except ImportError:
+            raise ImportError("The 'toml' library is not installed. You can install it by running 'pip install toml'")
         except Exception as e:
             raise e
+
 
     @classmethod
     def from_yaml(cls, file_path: str, *args, **kwargs):
