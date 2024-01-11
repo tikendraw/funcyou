@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="funcyou",
-    version="1.1.0",
+    version="1.1.1",
     author="Tikendra sahu",
     author_email="tikendraksahu1029@gmail.com",
     description="useful functions to reuse and save time",
