@@ -6,7 +6,7 @@ import sys
 import tarfile
 import warnings
 from pathlib import Path
-
+import yaml
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -277,16 +277,31 @@ class DotDict(dict):
 
     @classmethod
     def from_json(cls, file_path):
-        with open(file_path, "r") as file:
-            data = json.load(file)
-        return cls(data)
+        try:
+            with open(file_path, "r") as file:
+                data = json.load(file)
+            return cls(data)
+        except Exception as e:
+            raise e
 
     @classmethod
     def from_toml(cls, file_path):
-        with open(file_path, "r") as file:
-            data = toml.load(file)
-        return cls(data)
+        try:
+            with open(file_path, "r") as file:
+                data = toml.load(file)
+            return cls(data)
+        except Exception as e:
+            raise e
 
+    @classmethod
+    def from_yaml(cls, file_path):
+        try:
+            with open(file_path, "r") as file:
+                data = yaml.safe_load(file)
+            
+            return cls(data)
+        except Exception as e:
+            raise e
 
 if __name__ == "__main__":
     print("main")
