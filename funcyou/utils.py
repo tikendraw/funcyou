@@ -246,6 +246,10 @@ from yaml import SafeLoader
 from yaml.constructor import ConstructorError
 
 
+import json
+import toml
+import yaml
+
 class DotDict(dict):
     def __init__(self, dictionary=None):
         if dictionary is not None:
@@ -254,29 +258,32 @@ class DotDict(dict):
                     value = DotDict(value)
                 self[key] = value
 
-    def __getattr__(self, key):
+    def __getattr__(self, key: str):
         if key in self:
             return self[key]
         else:
             raise AttributeError(f"'DotDict' object has no attribute '{key}'")
 
-    def __setattr__(self, key, value):
+    def __dir__(self):
+        return list(self.keys()) + list(super().__dir__())
+
+    def __setattr__(self, key: str, value):
         self[key] = value
 
-    def save_json(self, file_path):
+    def save_json(self, file_path: str):
         with open(file_path, "w") as file:
             json.dump(self, file, indent=4)
 
-    def save_toml(self, file_path):
+    def save_toml(self, file_path: str):
         with open(file_path, "w") as file:
             toml.dump(self, file)
 
-    def save_yaml(self, file_path):
+    def save_yaml(self, file_path: str):
         with open(file_path, "w") as file:
             yaml.dump(self, file)
 
     @classmethod
-    def from_json(cls, file_path):
+    def from_json(cls, file_path: str):
         try:
             with open(file_path, "r") as file:
                 data = json.load(file)
@@ -285,7 +292,7 @@ class DotDict(dict):
             raise e
 
     @classmethod
-    def from_toml(cls, file_path):
+    def from_toml(cls, file_path: str):
         try:
             with open(file_path, "r") as file:
                 data = toml.load(file)
@@ -294,14 +301,15 @@ class DotDict(dict):
             raise e
 
     @classmethod
-    def from_yaml(cls, file_path):
+    def from_yaml(cls, file_path: str, *args, **kwargs):
         try:
             with open(file_path, "r") as file:
-                data = yaml.safe_load(file)
-            
+                data = yaml.safe_load(file, *args, **kwargs)
+
             return cls(data)
         except Exception as e:
             raise e
+
 
 if __name__ == "__main__":
     print("main")
