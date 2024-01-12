@@ -12,6 +12,63 @@ import pandas as pd
 import sklearn
 import json
 import yaml
+import inspect, json
+from inspect import Parameter
+
+import inspect
+from typing import Optional
+from dataclasses import dataclass, asdict
+
+@dataclass
+class Argument:
+    name: str
+    type: Optional[str]
+    default_value: Optional[str]
+    required: bool
+
+@dataclass
+class FunctionSchema:
+    name: str
+    description: Optional[str]
+    parameters: list[Argument]
+    output: Optional[str]
+
+def get_function_schema(func):
+    """
+    Returns a schema for the function
+    Describes the function and its parameters
+    """
+    signature = inspect.signature(func)
+    
+    parameters_info = []
+    for param_name, param_obj in signature.parameters.items():
+        param_type = param_obj.annotation if param_obj.annotation != inspect.Parameter.empty else None
+        default_value = param_obj.default if param_obj.default != inspect.Parameter.empty else None
+        required = True if param_obj.default == inspect.Parameter.empty else False
+
+        argument = Argument(
+            name=param_name,
+            type=str(param_type),
+            default_value=str(default_value) if default_value is not None else None,
+            required=required
+        )
+        parameters_info.append(argument)
+
+    return FunctionSchema(
+        name=func.__name__,
+        description=func.__doc__,
+        parameters=parameters_info,
+        output=str(signature.return_annotation) if signature.return_annotation != inspect.Parameter.empty else None
+    )
+
+    
+def get_function_schema_as_json(func):
+    """
+    Returns a schema for the function
+    Describes the function and its parameters
+    """
+    schema = get_function_schema(func)
+    json_str = json.dumps(asdict(schema), indent=2)
 
 
 def variable_memory():
